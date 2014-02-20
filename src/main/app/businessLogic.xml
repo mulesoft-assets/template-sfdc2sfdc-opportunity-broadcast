@@ -1,43 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
-	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:json="http://www.mulesoft.org/schema/mule/json"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
-http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
-	<batch:job name="syncAccountsBatch">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<batch:job name="syncOpportunitiesBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
 		<batch:process-records>
-			<batch:step name="foreachAccountInAGetAccountInBStep">
-				<enricher source="#[payload]" target="#[recordVars['accountInB']]"
-					doc:name="store result in record var 'accountInB'">
+			<batch:step name="foreachOpportunityInAGetOpportunityInBStep">
+				<enricher source="#[payload]" target="#[recordVars['opportunityInB']]"
+					doc:name="store result in record var 'opportunityInB'">
 					<sfdc:query-single config-ref="SalesforceB"
-						query="SELECT Id FROM Account WHERE Name = '#[payload['Name']]'"
-						doc:name="query Account in Salesforce Instance B" />
+						query="SELECT Id FROM Opportunity WHERE Name = '#[payload['Name']]'"
+						doc:name="query Opportunity in Salesforce Instance B" />
 				</enricher>
 			</batch:step>
-			<batch:step name="foreachAccountInAUpsertAccountInBStep">
-				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['accountInB'] instanceof NullPayload) {
+			<batch:step name="foreachOpportunityInAUpsertOpportunityInBStep">
+				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['opportunityInB'] instanceof NullPayload) {
 	// Remove ID as it is an insert
 	payload.remove('Id')
 } else {
 	// Add target system ID as it is an update
-    payload.put('Id', recordVars['accountInB']['Id'])
-}]]></expression-component>
+    payload.put('Id', recordVars['opportunityInB']['Id'])
+}
+]]></expression-component>
 				<expression-component
 					doc:name="remove unnecessary fields and map field types"><![CDATA[payload.remove('LastModifiedDate');
 
 // TODO - This is necessary due to: https://www.mulesoft.org/jira/browse/CLDCONNECT-1248
-payload.put('NumberOfEmployees', Integer.parseInt(payload['NumberOfEmployees']) );]]></expression-component>
+if (payload.get('Amount') == null) {
+	payload.remove('Amount') 
+} else {
+	double doubleAmount = Double.parseDouble(payload.get('Amount'));
+	payload.put('Amount', doubleAmount);
+}
+
+if (payload.get('CloseDate') == null) {
+	payload.remove('CloseDate') 
+} else {
+	java.util.Date dateCloseDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(payload.get('CloseDate'));
+	payload.put('CloseDate', dateCloseDate);
+}]]></expression-component>
 				<batch:commit size="200" doc:name="Batch Commit">
-                    <flow-ref name="commitAccountsFlow" doc:name="Flow Reference"/>
+                    <logger message="Opportunities to update/create: #[payload]" level="INFO" doc:name="log Opportunities to update/create"/>
+                    <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="Opportunity" doc:name="upsert Opportunities in Salesforce Instance B">
+                        <sfdc:objects ref="#[payload]"/>
+                    </sfdc:upsert>
+                    <logger message="Upsert result: #[payload]" level="INFO" doc:name="log Result"/>
 				</batch:commit>
 			</batch:step>
 		</batch:process-records>
@@ -48,12 +63,5 @@ payload.put('NumberOfEmployees', Integer.parseInt(payload['NumberOfEmployees']) 
 				message="Migration process has finished: #[payload]" />
 		</batch:on-complete>
 	</batch:job>
-    <flow name="commitAccountsFlow" doc:name="commitAccountsFlow">
-        <logger message="Accounts to update/create: #[payload]" level="INFO" doc:name="log Accounts to update/create"/>
-        <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="Account" doc:name="upsert Accounts in Salesforce Instance B">
-            <sfdc:objects ref="#[payload]"/>
-        </sfdc:upsert>
-        <logger message="Upsert result: #[payload]" level="ERROR" doc:name="log Result"/>
-    </flow>
 
 </mule>

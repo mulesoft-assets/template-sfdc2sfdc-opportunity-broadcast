@@ -41,5 +41,9 @@ public class SfdcObjectBuilder {
 	public static SfdcObjectBuilder anAccount() {
 		return new SfdcObjectBuilder();
 	}
+	
+	public static SfdcObjectBuilder anOpportunity() {
+		return new SfdcObjectBuilder();
+	}
 
 }

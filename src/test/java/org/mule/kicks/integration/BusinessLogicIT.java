@@ -1,8 +1,7 @@
 package org.mule.kicks.integration;
 
-import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
-import static org.mule.kicks.builders.SfdcObjectBuilder.anAccount;
+import static org.mule.kicks.builders.SfdcObjectBuilder.anOpportunity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +15,6 @@ import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
-import org.mule.api.context.notification.ServerNotification;
 import org.mule.context.notification.NotificationException;
 import org.mule.kicks.builders.SfdcObjectBuilder;
 import org.mule.kicks.test.utils.BatchTestHelper;
@@ -24,13 +22,9 @@ import org.mule.kicks.test.utils.ListenerProbe;
 import org.mule.kicks.test.utils.PipelineSynchronizeListener;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.probe.PollingProber;
-import org.mule.tck.probe.Probe;
 import org.mule.tck.probe.Prober;
 import org.mule.transport.NullPayload;
 
-import com.mulesoft.module.batch.api.notification.BatchNotification;
-import com.mulesoft.module.batch.api.notification.BatchNotificationListener;
-import com.mulesoft.module.batch.engine.BatchJobInstanceStore;
 import com.sforce.soap.partner.SaveResult;
 
 /**
@@ -40,12 +34,12 @@ import com.sforce.soap.partner.SaveResult;
 public class BusinessLogicIT extends AbstractKickTestCase {
 
 	private static final String POLL_FLOW_NAME = "triggerFlow";
-	private static final String KICK_NAME = "sfdc2sfdc-accounts-onewaysync";
+	private static final String KICK_NAME = "sfdc2sfdc-opportunity-onewaysync";
 
-	private static final int TIMEOUT_MILLIS = 60;
+	private static final int TIMEOUT_SECONDS = 60;
 
-	private static SubflowInterceptingChainLifecycleWrapper checkAccountflow;
-	private static List<Map<String, Object>> createdAccountsInA = new ArrayList<Map<String, Object>>();
+	private static SubflowInterceptingChainLifecycleWrapper checkOpportunityflow;
+	private static List<Map<String, Object>> createdOpportunitiesInA = new ArrayList<Map<String, Object>>();
 
 	private final Prober pollProber = new PollingProber(10000, 1000);
 	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
@@ -73,9 +67,9 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 
 		helper = new BatchTestHelper(muleContext);
 
-		// Flow to retrieve accounts from target system after syncing
-		checkAccountflow = getSubFlow("retrieveAccountFlow");
-		checkAccountflow.initialise();
+		// Flow to retrieve opportunities from target system after syncing
+		checkOpportunityflow = getSubFlow("retrieveOpportunityFlow");
+		checkOpportunityflow.initialise();
 
 		createEntities();
 	}
@@ -94,23 +88,23 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		waitForPollToRun();
 
 		// Wait for the batch job executed by the poll flow to finish
-		helper.awaitJobTermination(TIMEOUT_MILLIS * 1000, 500);
+		helper.awaitJobTermination(TIMEOUT_SECONDS * 1000, 500);
 		helper.assertJobWasSuccessful();
 
 		// Assert first object was not sync
-		assertEquals("The account should not have been sync", null, invokeRetrieveAccountFlow(checkAccountflow, createdAccountsInA.get(0)));
+		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(0)));
 
 		// Assert second object was not sync
-		assertEquals("The account should not have been sync", null, invokeRetrieveAccountFlow(checkAccountflow, createdAccountsInA.get(1)));
+		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(1)));
 
 		// Assert third object was sync to target system
-		Map<String, Object> payload = invokeRetrieveAccountFlow(checkAccountflow, createdAccountsInA.get(2));
-		assertEquals("The account should have been sync", createdAccountsInA.get(2)
+		Map<String, Object> payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(2));
+		assertEquals("The opportunity should have been sync", createdOpportunitiesInA.get(2)
 																			.get("Name"), payload.get("Name"));
 		// Assert fourth object was sync to target system
-		final Map<String, Object> fourthAccount = createdAccountsInA.get(3);
-		payload = invokeRetrieveAccountFlow(checkAccountflow, fourthAccount);
-		assertEquals("The account should have been sync (Name)", fourthAccount.get("Name"), payload.get("Name"));
+		final Map<String, Object> fourthOpportunity = createdOpportunitiesInA.get(3);
+		payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, fourthOpportunity);
+		assertEquals("The opportunity should have been sync (Name)", fourthOpportunity.get("Name"), payload.get("Name"));
 	}
 
 	private void registerListeners() throws NotificationException {
@@ -122,11 +116,11 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Map<String, Object> invokeRetrieveAccountFlow(final SubflowInterceptingChainLifecycleWrapper flow, final Map<String, Object> account) throws Exception {
-		final Map<String, Object> accountMap = new HashMap<String, Object>();
+	private Map<String, Object> invokeRetrieveOpportunityFlow(final SubflowInterceptingChainLifecycleWrapper flow, final Map<String, Object> opportunity) throws Exception {
+		final Map<String, Object> opportunityMap = new HashMap<String, Object>();
 
-		accountMap.put("Name", account.get("Name"));
-		final MuleEvent event = flow.process(getTestEvent(accountMap, MessageExchangePattern.REQUEST_RESPONSE));
+		opportunityMap.put("Name", opportunity.get("Name"));
+		final MuleEvent event = flow.process(getTestEvent(opportunityMap, MessageExchangePattern.REQUEST_RESPONSE));
 		final Object payload = event.getMessage()
 									.getPayload();
 		if (payload instanceof NullPayload) {
@@ -140,78 +134,78 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 	private void createEntities() throws MuleException, Exception {
 
 		// Create object in target system to be update
-		final SubflowInterceptingChainLifecycleWrapper createAccountInBFlow = getSubFlow("createAccountFlowB");
-		createAccountInBFlow.initialise();
+		final SubflowInterceptingChainLifecycleWrapper createOpportunityInBFlow = getSubFlow("createOpportunityFlowB");
+		createOpportunityInBFlow.initialise();
 
-		SfdcObjectBuilder updateAccount = anAccount().with("Name", buildUniqueName(KICK_NAME, "DemoUpdateAccount"))
+		SfdcObjectBuilder updateOpportunity = anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoUpdateOpportunity"))
 														.with("Industry", "Education");
 
-		final List<Map<String, Object>> createdAccountInB = new ArrayList<Map<String, Object>>();
-		// This account should BE sync (updated) as the industry is Education, has more than 5000 Employees and the record exists in the target system
-		createdAccountInB.add(updateAccount.with("NumberOfEmployees", 17000)
+		final List<Map<String, Object>> createdOpportunityInB = new ArrayList<Map<String, Object>>();
+		// This opportunity should BE sync (updated) as the industry is Education, has more than 5000 Employees and the record exists in the target system
+		createdOpportunityInB.add(updateOpportunity.with("NumberOfEmployees", 17000)
 											.build());
-		createAccountInBFlow.process(getTestEvent(createdAccountInB, MessageExchangePattern.REQUEST_RESPONSE));
+		createOpportunityInBFlow.process(getTestEvent(createdOpportunityInB, MessageExchangePattern.REQUEST_RESPONSE));
 
-		// Create accounts in source system to be or not to be synced
-		final SubflowInterceptingChainLifecycleWrapper createAccountInAFlow = getSubFlow("createAccountFlowA");
-		createAccountInAFlow.initialise();
+		// Create opportunities in source system to be or not to be synced
+		final SubflowInterceptingChainLifecycleWrapper createOpportunityInAFlow = getSubFlow("createOpportunityFlowA");
+		createOpportunityInAFlow.initialise();
 
-		// This account should not be synced as the industry is not "Education" or "Government"
-		createdAccountsInA.add(anAccount().with("Name", buildUniqueName(KICK_NAME, "DemoFilterIndustryAccount"))
+		// This opportunity should not be synced as the industry is not "Education" or "Government"
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoFilterIndustryOpportunity"))
 											.with("Industry", "Insurance")
 											.with("NumberOfEmployees", 17000)
 											.build());
 
-		// This account should not be synced as the number of employees is less than 5000
-		createdAccountsInA.add(anAccount().with("Name", buildUniqueName(KICK_NAME, "DemoFilterIndustryAccount"))
+		// This opportunity should not be synced as the number of employees is less than 5000
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoFilterIndustryOpportunity"))
 											.with("Industry", "Government")
 											.with("NumberOfEmployees", 2500)
 											.build());
 
-		// This account should BE synced (inserted) as the number of employees if greater than 5000 and the industry is "Government"
-		createdAccountsInA.add(anAccount().with("Name", buildUniqueName(KICK_NAME, "DemoCreateAccount"))
+		// This opportunity should BE synced (inserted) as the number of employees if greater than 5000 and the industry is "Government"
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoCreateOpportunity"))
 											.with("Industry", "Government")
 											.with("NumberOfEmployees", 18000)
 											.build());
 
-		// This account should BE synced (updated) as the number of employees if greater than 5000 and the industry is "Education"
-		createdAccountsInA.add(updateAccount.with("NumberOfEmployees", 12000)
+		// This opportunity should BE synced (updated) as the number of employees if greater than 5000 and the industry is "Education"
+		createdOpportunitiesInA.add(updateOpportunity.with("NumberOfEmployees", 12000)
 											.build());
 
-		final MuleEvent event = createAccountInAFlow.process(getTestEvent(createdAccountsInA, MessageExchangePattern.REQUEST_RESPONSE));
+		final MuleEvent event = createOpportunityInAFlow.process(getTestEvent(createdOpportunitiesInA, MessageExchangePattern.REQUEST_RESPONSE));
 		final List<SaveResult> results = (List<SaveResult>) event.getMessage()
 																	.getPayload();
 		int i = 0;
 		for (SaveResult result : results) {
-			Map<String, Object> accountInA = createdAccountsInA.get(i);
-			accountInA.put("Id", result.getId());
+			Map<String, Object> opportunityInA = createdOpportunitiesInA.get(i);
+			opportunityInA.put("Id", result.getId());
 			i++;
 		}
 	}
 
 	private void deleteEntities() throws MuleException, Exception {
-		// Delete the created accounts in A
-		SubflowInterceptingChainLifecycleWrapper deleteAccountFromAflow = getSubFlow("deleteAccountFromAFlow");
-		deleteAccountFromAflow.initialise();
+		// Delete the created opportunities in A
+		SubflowInterceptingChainLifecycleWrapper deleteOpportunityFromAflow = getSubFlow("deleteOpportunityFromAFlow");
+		deleteOpportunityFromAflow.initialise();
 
 		final List<Object> idList = new ArrayList<Object>();
-		for (final Map<String, Object> c : createdAccountsInA) {
+		for (final Map<String, Object> c : createdOpportunitiesInA) {
 			idList.add(c.get("Id"));
 		}
-		deleteAccountFromAflow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
+		deleteOpportunityFromAflow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 
-		// Delete the created accounts in B
-		SubflowInterceptingChainLifecycleWrapper deleteAccountFromBflow = getSubFlow("deleteAccountFromBFlow");
-		deleteAccountFromBflow.initialise();
+		// Delete the created opportunities in B
+		SubflowInterceptingChainLifecycleWrapper deleteOpportunityFromBflow = getSubFlow("deleteOpportunityFromBFlow");
+		deleteOpportunityFromBflow.initialise();
 
 		idList.clear();
-		for (final Map<String, Object> createdAccount : createdAccountsInA) {
-			final Map<String, Object> account = invokeRetrieveAccountFlow(checkAccountflow, createdAccount);
-			if (account != null) {
-				idList.add(account.get("Id"));
+		for (final Map<String, Object> createdOpportunity : createdOpportunitiesInA) {
+			final Map<String, Object> opportunity = invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunity);
+			if (opportunity != null) {
+				idList.add(opportunity.get("Id"));
 			}
 		}
-		deleteAccountFromBflow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
+		deleteOpportunityFromBflow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 	}
 
 }

@@ -23,14 +23,14 @@ Here you should:
 Here you should not: 
 	* Run validations against external systems
 	* Choose flow of you application based on input parameters">
-    	<poll doc:name="fireup Account synchronization">
+    	<poll doc:name="fireup Opportunity synchronization">
             <fixed-frequency-scheduler frequency="${polling.frequency}" startDelay="${polling.start.delay}" />
             <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
-             <sfdc:query-all config-ref="SalesforceA" doc:name="query Accounts with filtering criteria from Salesforce Instance A" query="SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, RecordTypeId, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR  Industry = 'Government')">
-            </sfdc:query-all>
+             <sfdc:query config-ref="SalesforceA" doc:name="query Opportunities with filtering criteria from Salesforce Instance A" query="dsql:SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate FROM Opportunity WHERE Amount &gt; 5000">
+            </sfdc:query>
         </poll>
-        <logger message="#[payload]" level="INFO" doc:name="log created/updated Accounts"/>
-        <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
+        <logger message="#[payload]" level="INFO" doc:name="log created/updated Opportunities"/>
+        <batch:execute name="syncOpportunitiesBatch" doc:name="trigger syncOpportunitiesBatch"/>
     </flow>
     
 </mule>

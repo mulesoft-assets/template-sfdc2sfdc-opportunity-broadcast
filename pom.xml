@@ -4,10 +4,10 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.kicks</groupId>
-	<artifactId>sfdc2sfdc-accounts-onewaysync</artifactId>
+	<artifactId>sfdc2sfdc-opportunity-one-way-sync</artifactId>
 	<packaging>mule</packaging>
 	<version>1.0.0</version>
-	<name>SFDC2SFDC Accounts One way sync Mule Kick Project</name>
+	<name>SFDC2SFDC Opportunity One way sync Mule Kick Project</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
