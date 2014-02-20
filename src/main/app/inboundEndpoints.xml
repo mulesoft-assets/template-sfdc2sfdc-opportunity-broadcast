@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+xmlns="http://www.mulesoft.org/schema/mule/core" 
+xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
+xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+xmlns:spring="http://www.springframework.org/schema/beans" 
+version="EE-3.5.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+
+	<!-- 	In this file you should declare all your inbound endpoints and from here controll the access to your application -->
+
+    <flow name="triggerFlow" processingStrategy="synchronous"   doc:name="triggerFlow" doc:description="This is the simpliest entry point to start the excecution of your Kick
+Here you should: 
+	* Configure the inbound endpoint, in this case a polling to fetch data from origin system
+	* Handle any input parameter and set the scope of it so the main logic does not care from where it is called
+Here you should not: 
+	* Run validations against external systems
+	* Choose flow of you application based on input parameters">
+    	<poll doc:name="fireup Account synchronization">
+            <fixed-frequency-scheduler frequency="${polling.frequency}" startDelay="${polling.start.delay}" />
+            <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
+             <sfdc:query-all config-ref="SalesforceA" doc:name="query Accounts with filtering criteria from Salesforce Instance A" query="SELECT AccountNumber, AccountSource, AnnualRevenue, BillingCity, BillingCountry, BillingPostalCode, BillingState, BillingStreet, Description, Fax, Industry, LastModifiedDate, Name, NumberOfEmployees, OwnerId, Ownership, ParentId, Phone, Rating, RecordTypeId, ShippingCity, ShippingCountry, ShippingPostalCode, ShippingState, ShippingStreet, Sic, SicDesc, Site, TickerSymbol, Type, Website FROM Account WHERE LastModifiedDate &gt; #[flowVars['lastQueryDate']] AND NumberOfEmployees &gt; 5000 AND (Industry = 'Education' OR  Industry = 'Government')">
+            </sfdc:query-all>
+        </poll>
+        <logger message="#[payload]" level="INFO" doc:name="log created/updated Accounts"/>
+        <batch:execute name="syncAccountsBatch" doc:name="trigger syncAccountsBatch"/>
+    </flow>
+    
+</mule>
