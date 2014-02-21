@@ -3,7 +3,10 @@ package org.mule.kicks.integration;
 import static org.junit.Assert.assertEquals;
 import static org.mule.kicks.builders.SfdcObjectBuilder.anOpportunity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,17 +97,15 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		// Assert first object was not sync
 		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(0)));
 
-		// Assert second object was not sync
-		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(1)));
-
 		// Assert third object was sync to target system
-		Map<String, Object> payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(2));
-		assertEquals("The opportunity should have been sync", createdOpportunitiesInA.get(2)
-																			.get("Name"), payload.get("Name"));
+		Map<String, Object> payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(1));
+		assertEquals("The opportunity should have been sync", createdOpportunitiesInA.get(1)
+																						.get("Name"), payload.get("Name"));
 		// Assert fourth object was sync to target system
-		final Map<String, Object> fourthOpportunity = createdOpportunitiesInA.get(3);
+		final Map<String, Object> fourthOpportunity = createdOpportunitiesInA.get(2);
 		payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, fourthOpportunity);
-		assertEquals("The opportunity should have been sync (Name)", fourthOpportunity.get("Name"), payload.get("Name"));
+		fourthOpportunity.remove("Id");
+		assertEquals("The opportunity should have been sync", fourthOpportunity.equals(payload));
 	}
 
 	private void registerListeners() throws NotificationException {
@@ -137,40 +138,41 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		final SubflowInterceptingChainLifecycleWrapper createOpportunityInBFlow = getSubFlow("createOpportunityFlowB");
 		createOpportunityInBFlow.initialise();
 
-		SfdcObjectBuilder updateOpportunity = anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoUpdateOpportunity"))
-														.with("Industry", "Education");
+		SfdcObjectBuilder updateOpportunity = anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoUpdate"))
+																.with("Amount", 12000);
 
 		final List<Map<String, Object>> createdOpportunityInB = new ArrayList<Map<String, Object>>();
 		// This opportunity should BE sync (updated) as the industry is Education, has more than 5000 Employees and the record exists in the target system
-		createdOpportunityInB.add(updateOpportunity.with("NumberOfEmployees", 17000)
-											.build());
+		createdOpportunityInB.add(updateOpportunity.with("StageName", "MyStageBeforeUpdated")
+													.with("CloseDate", date("2032-06-12"))
+													.with("Probability", "50")
+													.build());
 		createOpportunityInBFlow.process(getTestEvent(createdOpportunityInB, MessageExchangePattern.REQUEST_RESPONSE));
 
 		// Create opportunities in source system to be or not to be synced
 		final SubflowInterceptingChainLifecycleWrapper createOpportunityInAFlow = getSubFlow("createOpportunityFlowA");
 		createOpportunityInAFlow.initialise();
 
-		// This opportunity should not be synced as the industry is not "Education" or "Government"
-		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoFilterIndustryOpportunity"))
-											.with("Industry", "Insurance")
-											.with("NumberOfEmployees", 17000)
-											.build());
+		// This opportunity should not be synced as the amount is less than 5000
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoFilter"))
+													.with("Amount", 100)
+													.with("StageName", "NoStage")
+													.with("CloseDate", date("2050-10-10"))
+													.with("Probability", "1")
+													.build());
 
-		// This opportunity should not be synced as the number of employees is less than 5000
-		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoFilterIndustryOpportunity"))
-											.with("Industry", "Government")
-											.with("NumberOfEmployees", 2500)
-											.build());
+		// This opportunity should BE synced (inserted) as the amount is greater than 5000
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoCreate"))
+													.with("Amount", 10000)
+													.with("StageName", "NewStage")
+													.with("CloseDate", date("2051-11-11"))
+													.with("Probability", "100")
+													.build());
 
-		// This opportunity should BE synced (inserted) as the number of employees if greater than 5000 and the industry is "Government"
-		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoCreateOpportunity"))
-											.with("Industry", "Government")
-											.with("NumberOfEmployees", 18000)
-											.build());
-
-		// This opportunity should BE synced (updated) as the number of employees if greater than 5000 and the industry is "Education"
-		createdOpportunitiesInA.add(updateOpportunity.with("NumberOfEmployees", 12000)
-											.build());
+		// This opportunity should BE synced (updated) as the amount is greater than 5000
+		createdOpportunitiesInA.add(updateOpportunity.with("StageName", "MyStageAfterUpdated")
+														.with("CloseDate", date("2040-07-13"))
+														.build());
 
 		final MuleEvent event = createOpportunityInAFlow.process(getTestEvent(createdOpportunitiesInA, MessageExchangePattern.REQUEST_RESPONSE));
 		final List<SaveResult> results = (List<SaveResult>) event.getMessage()
@@ -206,6 +208,10 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 			}
 		}
 		deleteOpportunityFromBflow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
+	}
+
+	private Date date(String dateString) throws ParseException {
+		return new SimpleDateFormat("yyyy-MM-dd").parse(dateString);
 	}
 
 }
