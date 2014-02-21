@@ -24,7 +24,7 @@ Here you should not:
 	* Run validations against external systems
 	* Choose flow of you application based on input parameters">
     	<poll doc:name="fireup Opportunity synchronization">
-            <fixed-frequency-scheduler frequency="${polling.frequency}" startDelay="${polling.start.delay}" />
+            <fixed-frequency-scheduler frequency="${poll.frequencyMillis}" startDelay="${poll.startDelayMillis}" />
             <watermark variable="lastQueryDate" default-expression="${watermark.default.expression}" selector="MAX" selector-expression="#[payload.LastModifiedDate]"/>
              <sfdc:query config-ref="SalesforceA" doc:name="query Opportunities with filtering criteria from Salesforce Instance A" query="dsql:SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate FROM Opportunity WHERE Amount &gt; 5000">
             </sfdc:query>

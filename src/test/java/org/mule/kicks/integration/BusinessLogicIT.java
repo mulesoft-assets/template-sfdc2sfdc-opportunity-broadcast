@@ -56,10 +56,10 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		System.setProperty("page.size", "1000");
 
 		// Set the frequency between polls to 10 seconds
-		System.setProperty("polling.frequency", "10000");
+		System.setProperty("polling.frequencyMillis", "10000");
 
 		// Set the poll starting delay to 20 seconds
-		System.setProperty("polling.start.delay", "20000");
+		System.setProperty("polling.startDelayMillis", "20000");
 
 		// Setting Default Watermark Expression to query SFDC with LastModifiedDate greater than ten seconds before current time
 		System.setProperty("watermark.default.expression", "#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
