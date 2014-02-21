@@ -1,6 +1,7 @@
 package org.mule.kicks.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mule.kicks.builders.SfdcObjectBuilder.anOpportunity;
 
 import java.text.ParseException;
@@ -28,6 +29,7 @@ import org.mule.tck.probe.PollingProber;
 import org.mule.tck.probe.Prober;
 import org.mule.transport.NullPayload;
 
+import com.google.common.collect.Maps;
 import com.sforce.soap.partner.SaveResult;
 
 /**
@@ -97,15 +99,14 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		// Assert first object was not sync
 		assertEquals("The opportunity should not have been sync", null, invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(0)));
 
-		// Assert third object was sync to target system
+		// Assert second object was sync to target system
 		Map<String, Object> payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, createdOpportunitiesInA.get(1));
 		assertEquals("The opportunity should have been sync", createdOpportunitiesInA.get(1)
 																						.get("Name"), payload.get("Name"));
-		// Assert fourth object was sync to target system
-		final Map<String, Object> fourthOpportunity = createdOpportunitiesInA.get(2);
-		payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, fourthOpportunity);
-		fourthOpportunity.remove("Id");
-		assertEquals("The opportunity should have been sync", fourthOpportunity.equals(payload));
+		// Assert third object was sync to target system
+		final Map<String, Object> thirdOpportunity = new HashMap<String, Object>(createdOpportunitiesInA.get(2));
+		payload = invokeRetrieveOpportunityFlow(checkOpportunityflow, thirdOpportunity);
+		assertEquals("The opportunity should exist in target system", payload.get("Name"), thirdOpportunity.get("Name"));
 	}
 
 	private void registerListeners() throws NotificationException {
@@ -139,7 +140,7 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		createOpportunityInBFlow.initialise();
 
 		SfdcObjectBuilder updateOpportunity = anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoUpdate"))
-																.with("Amount", 12000);
+																.with("Amount", 12000.0);
 
 		final List<Map<String, Object>> createdOpportunityInB = new ArrayList<Map<String, Object>>();
 		// This opportunity should BE sync (updated) as the industry is Education, has more than 5000 Employees and the record exists in the target system

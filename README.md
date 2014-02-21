@@ -1,4 +1,4 @@
-# Mule Kick: SFDC to SFDC Account One Way Sync
+# Mule Kick: SFDC to SFDC Opportunity One Way Sync
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
@@ -14,9 +14,9 @@
  
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to syncronize accounts between two Salesfoce orgs.
+As a Salesforce admin I want to syncronize opportunities between two Salesfoce orgs.
 
-This Kick (template) should serve as a foundation for setting an online sync of accounts from one SalesForce instance to another. Everytime there is a new account or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the account on the target org.
+This Kick (template) should serve as a foundation for setting an online sync of opportunities from one SalesForce instance to another. Everytime there is a new opportunity or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the opportunity on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
@@ -29,13 +29,13 @@ Finally during the On Complete stage the Kick will logoutput statistics data int
 
 # Run it!
 
-Simple steps to get SFDC to SFDC Accounts Sync running.
+Simple steps to get SFDC to SFDC Opportunities Sync running.
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**. 
 
-Once your app is all set and started, there is no need to do anything else. Every time a account is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
+Once your app is all set and started, there is no need to do anything else. Every time a opportunity is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
 
 
 ## Running on premise <a name="runonopremise"/>
