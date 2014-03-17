@@ -1,4 +1,4 @@
-# Mule Kick: SFDC to SFDC Opportunity One Way Sync
+# Anypoint Template: SFDC to SFDC Opportunity Broadcast
 
 + [Use Case](#usecase)
 + [Run it!](#runit)
@@ -10,22 +10,22 @@
     * [inboundEndpoints.xml](#inboundendpointsxml)
     * [businessLogic.xml](#businesslogicxml)
     * [errorHandling.xml](#errorhandlingxml)
-+ [Testing the Kick](#testingthekick)
++ [Testing the Template](#testingthetemplate)
  
 
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to syncronize opportunities between two Salesfoce orgs.
 
-This Kick (template) should serve as a foundation for setting an online sync of opportunities from one SalesForce instance to another. Everytime there is a new opportunity or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the opportunity on the target org.
+This Template should serve as a foundation for setting an online sync of opportunities from one SalesForce instance to another. Everytime there is a new opportunity or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the opportunity on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
-As implemented, this Kick leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
+As implemented, this Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing).
 The batch job is divided in Input, Process and On Complete stages.
 The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
 During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
 The last step of the Process stage will group the users and create/update them in SFDC Org B.
-Finally during the On Complete stage the Kick will logoutput statistics data into the console.
+Finally during the On Complete stage the Template will logoutput statistics data into the console.
 
 # Run it!
 
@@ -45,7 +45,7 @@ Once your app is all set and started, there is no need to do anything else. The 
 
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 
-In order to use this Mule Kick you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
+In order to use this Mule Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 
 ### Application configuration
 + http.port `9090` 
@@ -67,8 +67,8 @@ In order to use this Mule Kick you need to configure properties (Credentials, co
 
 # Customize It!<a name="customizeit"/>
 
-This brief guide intends to give a high level idea of how this Kick is built and how you can change it according to your needs.
-As mule applications are based on XML files, this page will be organized by describing all the XML that conform the Kick.
+This brief guide intends to give a high level idea of how this Template is built and how you can change it according to your needs.
+As mule applications are based on XML files, this page will be organized by describing all the XML that conform the Template.
 Of course more files will be found such as Test Classes and [Mule Application Files](http://www.mulesoft.org/documentation/display/current/Application+Format), but to keep it simple we will focus on the XMLs.
 
 Here is a list of the main XML files you'll find in this application:
@@ -86,22 +86,22 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the kick is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Kick:
+Functional aspect of the Template is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Template:
 
-1. During the Input stage the Kick will go to the SalesForce Org A and query all the existing users that match the filter criteria.
+1. During the Input stage the Template will go to the SalesForce Org A and query all the existing users that match the filter criteria.
 2. During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
 3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
-Finally during the On Complete stage the Kick will logoutput statistics data into the console.
+Finally during the On Complete stage the Template will logoutput statistics data into the console.
 
 ## inboundEndpoints.xml<a name="inboundendpointsxml"/>
-This is file is not used in this particular kick, but you'll oftenly find flows containing the inbound endpoints to start the integration.
+This is file is not used in this particular Template, but you'll oftenly find flows containing the inbound endpoints to start the integration.
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
 
-# Testing the Kick <a name="testingthekick"/>
+# Testing the Template <a name="testingthetemplate"/>
 
-You will notice that the Kick has been shipped with test.
+You will notice that the Template has been shipped with test.
 These devidi them self into two categories:
 
 + Unit Tests
