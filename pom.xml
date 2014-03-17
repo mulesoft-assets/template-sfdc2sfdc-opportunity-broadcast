@@ -4,15 +4,15 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.mule.kicks</groupId>
-	<artifactId>sfdc2sfdc-opportunity-one-way-sync</artifactId>
+	<artifactId>sfdc2sfdc-opportunity-broadcast</artifactId>
 	<packaging>mule</packaging>
-	<version>1.1.0</version>
+	<version>1.0.0</version>
 	<name>SFDC2SFDC Opportunity One way sync Mule Kick Project</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<mule.version>3.5.0-cascade</mule.version>
+		<mule.version>3.5.0-M4</mule.version>
 		<sfdc.version>5.4.3</sfdc.version>
 		<eclipsePluginVersion>2.8</eclipsePluginVersion>
 		<jdkName>JavaSE-1.6</jdkName>
@@ -462,6 +462,20 @@
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-module-sfdc</artifactId>
 			<version>${sfdc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.muleesb.modules</groupId>
+			<artifactId>mule-module-batch-ee</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.tests</groupId>
+			<artifactId>mule-tests-functional</artifactId>
+			<version>${mule.version}</version>
+			<scope>test</scope>
+			<type>test-jar</type>
 		</dependency>
 	</dependencies>
 

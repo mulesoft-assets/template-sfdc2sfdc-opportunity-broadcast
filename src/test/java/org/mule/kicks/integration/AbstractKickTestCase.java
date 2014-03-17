@@ -88,21 +88,6 @@ public class AbstractKickTestCase extends FunctionalTestCase {
 		return (SubflowInterceptingChainLifecycleWrapper) muleContext.getRegistry().lookupObject(flowName);
 	}
 
-	protected void runSchedulersOnce(String flowName) throws Exception {
-		final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers(flowName));
-
-		for (final Scheduler scheduler : schedulers) {
-			scheduler.schedule();
-		}
-	}
-
-	protected void stopFlowSchedulers(String flowName) throws MuleException {
-		final Collection<Scheduler> schedulers = muleContext.getRegistry().lookupScheduler(Schedulers.flowPollingSchedulers(flowName));
-		for (final Scheduler scheduler : schedulers) {
-			scheduler.stop();
-		}
-	}
-
 	protected String buildUniqueName(String kickName, String name) {
 		String timeStamp = new Long(new Date().getTime()).toString();
 
