@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 
 	<!-- 	In this file you should declare all your inbound endpoints and from here controll the access to your application -->
 
-    <flow name="triggerFlow" processingStrategy="synchronous"   doc:name="triggerFlow" doc:description="This is the simpliest entry point to start the excecution of your Kick
+    <flow name="triggerFlow" processingStrategy="synchronous"   doc:name="triggerFlow" doc:description="This is the simpliest entry point to start the excecution of your Template
 Here you should: 
 	* Configure the inbound endpoint, in this case a polling to fetch data from origin system
 	* Handle any input parameter and set the scope of it so the main logic does not care from where it is called

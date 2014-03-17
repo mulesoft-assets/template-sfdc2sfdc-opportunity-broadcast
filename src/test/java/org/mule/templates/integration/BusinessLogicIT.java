@@ -1,8 +1,8 @@
-package org.mule.kicks.integration;
+package org.mule.templates.integration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mule.kicks.builders.SfdcObjectBuilder.anOpportunity;
+import static org.mule.templates.builders.SfdcObjectBuilder.anOpportunity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,26 +20,26 @@ import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
 import org.mule.context.notification.NotificationException;
-import org.mule.kicks.builders.SfdcObjectBuilder;
-import org.mule.kicks.test.utils.BatchTestHelper;
-import org.mule.kicks.test.utils.ListenerProbe;
-import org.mule.kicks.test.utils.PipelineSynchronizeListener;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.probe.PollingProber;
 import org.mule.tck.probe.Prober;
+import org.mule.templates.builders.SfdcObjectBuilder;
+import org.mule.templates.test.utils.BatchTestHelper;
+import org.mule.templates.test.utils.ListenerProbe;
+import org.mule.templates.test.utils.PipelineSynchronizeListener;
 import org.mule.transport.NullPayload;
 
 import com.google.common.collect.Maps;
 import com.sforce.soap.partner.SaveResult;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule Kick that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Mule Template that make calls to external systems.
  * 
  */
-public class BusinessLogicIT extends AbstractKickTestCase {
+public class BusinessLogicIT extends AbstractTemplateTestCase {
 
 	private static final String POLL_FLOW_NAME = "triggerFlow";
-	private static final String KICK_NAME = "sfdc2sfdc-opportunity-onewaysync";
+	private static final String TEMPLATE_NAME = "sfdc2sfdc-opportunity-broadcast";
 
 	private static final int TIMEOUT_SECONDS = 60;
 
@@ -139,7 +139,7 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		final SubflowInterceptingChainLifecycleWrapper createOpportunityInBFlow = getSubFlow("createOpportunityFlowB");
 		createOpportunityInBFlow.initialise();
 
-		SfdcObjectBuilder updateOpportunity = anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoUpdate"))
+		SfdcObjectBuilder updateOpportunity = anOpportunity().with("Name", buildUniqueName(TEMPLATE_NAME, "DemoUpdate"))
 																.with("Amount", 12000.0);
 
 		final List<Map<String, Object>> createdOpportunityInB = new ArrayList<Map<String, Object>>();
@@ -155,7 +155,7 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 		createOpportunityInAFlow.initialise();
 
 		// This opportunity should not be synced as the amount is less than 5000
-		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoFilter"))
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(TEMPLATE_NAME, "DemoFilter"))
 													.with("Amount", 100)
 													.with("StageName", "NoStage")
 													.with("CloseDate", date("2050-10-10"))
@@ -163,7 +163,7 @@ public class BusinessLogicIT extends AbstractKickTestCase {
 													.build());
 
 		// This opportunity should BE synced (inserted) as the amount is greater than 5000
-		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(KICK_NAME, "DemoCreate"))
+		createdOpportunitiesInA.add(anOpportunity().with("Name", buildUniqueName(TEMPLATE_NAME, "DemoCreate"))
 													.with("Amount", 10000)
 													.with("StageName", "NewStage")
 													.with("CloseDate", date("2051-11-11"))

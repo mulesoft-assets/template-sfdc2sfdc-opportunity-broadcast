@@ -1,4 +1,4 @@
-package org.mule.kicks.builders;
+package org.mule.templates.builders;
 
 import java.util.HashMap;
 import java.util.Map;
