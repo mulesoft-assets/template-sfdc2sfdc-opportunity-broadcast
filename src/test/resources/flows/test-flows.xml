@@ -4,20 +4,14 @@
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
-    <sub-flow name="createOpportunityFlowA" doc:name="createOpportunityFlowA">
+    <sub-flow name="createOpportunityFlow" doc:name="createOpportunityFlow">
         <sfdc:create config-ref="SalesforceA" type="Opportunity" doc:name="create Opportunity in Salesforce instance A">
             <sfdc:objects ref="#[payload]"/>
         </sfdc:create>
         <logger level="INFO" message="Create Opportunities in A result: #[payload]" doc:name="Logger"/>
     </sub-flow>
-    <sub-flow name="createOpportunityFlowB" doc:name="createOpportunityFlowB">
-        <sfdc:create config-ref="SalesforceB" type="Opportunity" doc:name="create Opportunity in Salesforce instance B">
-            <sfdc:objects ref="#[payload]"/>
-        </sfdc:create>
-        <logger level="INFO" message="Create Opportunities in B result: #[payload]" doc:name="Logger"/>
-    </sub-flow>
     <sub-flow name="retrieveOpportunityFlow" doc:name="retrieveOpportunityFlow">
-        <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, LastModifiedDate, Name, Amount, StageName, Probability, CloseDate FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="retrieve Opportunity in Salesforce instance B"/>
+        <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, LastModifiedDate, Name, Amount, StageName, Probability, CloseDate, AccountId FROM Opportunity WHERE Name = '#[payload['Name']]'" doc:name="retrieve Opportunity in Salesforce instance B"/>
         <logger level="INFO" message="Retrieve Opportunities result: #[payload]" doc:name="Logger"/>
     </sub-flow>
     <sub-flow name="deleteOpportunityFromAFlow" doc:name="deleteOpportunityFromAFlow">

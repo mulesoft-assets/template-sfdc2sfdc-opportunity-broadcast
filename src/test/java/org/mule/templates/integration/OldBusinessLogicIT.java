@@ -15,6 +15,7 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
@@ -36,7 +37,7 @@ import com.sforce.soap.partner.SaveResult;
  * The objective of this class is to validate the correct behavior of the Mule Template that make calls to external systems.
  * 
  */
-public class BusinessLogicIT extends AbstractTemplateTestCase {
+public class OldBusinessLogicIT extends AbstractTemplateTestCase {
 
 	private static final String POLL_FLOW_NAME = "triggerFlow";
 	private static final String TEMPLATE_NAME = "sfdc2sfdc-opportunity-broadcast";
@@ -87,6 +88,7 @@ public class BusinessLogicIT extends AbstractTemplateTestCase {
 	}
 
 	@Test
+	@Ignore
 	public void testMainFlow() throws Exception {
 		// Run poll and wait for it to run
 		runSchedulersOnce(POLL_FLOW_NAME);
