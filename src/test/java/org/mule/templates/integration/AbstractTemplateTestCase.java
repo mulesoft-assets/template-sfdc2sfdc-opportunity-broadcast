@@ -17,9 +17,9 @@ import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.junit4.FunctionalTestCase;
 
 /**
- * This is the base test class for Kicks integration tests.
+ * This is the base test class for Templates integration tests.
  * 
- * @author damiansima
+ * @author cesar.garcia
  */
 public class AbstractTemplateTestCase extends FunctionalTestCase {
 	private static final String MAPPINGS_FOLDER_PATH = "./mappings";
