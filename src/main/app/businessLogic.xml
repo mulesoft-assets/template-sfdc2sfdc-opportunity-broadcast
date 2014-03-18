@@ -25,7 +25,6 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
 				</enricher>
 			</batch:step>
 			 <batch:step name="findOrCreateAccountInBSetp" filter-expression="! ('syncAccount'=='${account.sync.policy}')">
-                <batch:set-record-variable variableName="idOfAccountInB" value="''" doc:name="idOfAccountInB"/>
                 <enricher source="#[payload]" target="#[flowVars['accountInB']]" doc:name="store result in accountInB">
                     <sfdc:query-single config-ref="SalesforceB" query="SELECT Id, Name FROM Account WHERE Name = '#[payload['Account']['Name']]'" doc:name="query Account in  Salesforce Instance B"/>
                 </enricher>
@@ -52,7 +51,7 @@ payload['Account'].put('NumberOfEmployees', Integer.parseInt(payload['Account'][
                 <expression-component doc:name="set Account ID"><![CDATA[payload.put('AccountId', recordVars['idOfAccountInB']);]]></expression-component>
             </batch:step>
             <batch:step name="setDummyAccountIdStep" filter-expression="! ('assignDummyAccount'=='${account.sync.policy}')">
-                <expression-component doc:name="set Account ID"><![CDATA[payload.put('AccountId', ${account.id.in.b});]]></expression-component>
+                <expression-component doc:name="set Account ID"><![CDATA[payload.put('AccountId', '${account.id.in.b}');]]></expression-component>
             </batch:step>
 			<batch:step name="foreachOpportunityInAUpsertOpportunityInBStep">
 				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['opportunityInB'] instanceof NullPayload) {
