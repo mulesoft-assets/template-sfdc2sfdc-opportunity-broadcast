@@ -20,14 +20,16 @@ public class BatchTestHelper {
 	protected Boolean failed;
 	protected BatchJobInstanceStore jobInstanceStore;
 
-	public BatchTestHelper(MuleContext muleContext) throws RegistrationException, NotificationException {
+	public BatchTestHelper(MuleContext muleContext)
+			throws RegistrationException, NotificationException {
 		failed = null;
-		jobInstanceStore = muleContext.getRegistry()
-										.lookupObject(BatchJobInstanceStore.class);
+		jobInstanceStore = muleContext.getRegistry().lookupObject(
+				BatchJobInstanceStore.class);
 		muleContext.registerListener(new BatchWaitListener());
 	}
 
-	public void awaitJobTermination(long timeoutMillis, long pollDelayMillis) throws Exception {
+	public void awaitJobTermination(long timeoutMillis, long pollDelayMillis)
+			throws Exception {
 		this.prober = new PollingProber(timeoutMillis, pollDelayMillis);
 		this.prober.check(new Probe() {
 
@@ -50,19 +52,22 @@ public class BatchTestHelper {
 	public void assertJobWasSuccessful() {
 		assertTrue("Batch job was not successful", wasJobSuccessful());
 	}
-	
+
 	/*
-	 * Helper Classes 
+	 * Helper Classes
 	 */
-	
+
 	protected class BatchWaitListener implements BatchNotificationListener {
 
 		public synchronized void onNotification(ServerNotification notification) {
 			final int action = notification.getAction();
 
-			if (action == BatchNotification.JOB_SUCCESSFUL || action == BatchNotification.JOB_STOPPED) {
+			if (action == BatchNotification.JOB_SUCCESSFUL
+					|| action == BatchNotification.JOB_STOPPED) {
 				failed = false;
-			} else if (action == BatchNotification.JOB_PROCESS_RECORDS_FAILED || action == BatchNotification.LOAD_PHASE_FAILED || action == BatchNotification.INPUT_PHASE_FAILED
+			} else if (action == BatchNotification.JOB_PROCESS_RECORDS_FAILED
+					|| action == BatchNotification.LOAD_PHASE_FAILED
+					|| action == BatchNotification.INPUT_PHASE_FAILED
 					|| action == BatchNotification.ON_COMPLETE_FAILED) {
 
 				failed = true;

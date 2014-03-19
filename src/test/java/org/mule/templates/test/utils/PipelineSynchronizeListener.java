@@ -9,19 +9,22 @@ import org.mule.context.notification.PipelineMessageNotification;
 /**
  * This listener checks notifications of flows finalizations.
  * 
- * Upon notification it will check that the flowToCheck property matches the name of the flow notifying its completion. Should the name match it will change the
- * state of readyToContinue to true.
+ * Upon notification it will check that the flowToCheck property matches the
+ * name of the flow notifying its completion. Should the name match it will
+ * change the state of readyToContinue to true.
  * 
  * @author damiansima
  */
-public class PipelineSynchronizeListener implements PipelineMessageNotificationListener<PipelineMessageNotification> {
+public class PipelineSynchronizeListener implements
+		PipelineMessageNotificationListener<PipelineMessageNotification> {
 	private String flowToCheck;
 	private boolean readyToContinue;
 	private Object notificatedPayload;
 
 	public PipelineSynchronizeListener(String flowToCheck) {
 		super();
-		Validate.notEmpty(flowToCheck, "the name of the flow can not be null nor empty");
+		Validate.notEmpty(flowToCheck,
+				"the name of the flow can not be null nor empty");
 
 		this.flowToCheck = flowToCheck;
 		this.readyToContinue = false;
@@ -33,8 +36,7 @@ public class PipelineSynchronizeListener implements PipelineMessageNotificationL
 		MuleMessage message = event.getMessage();
 
 		if (notification.getAction() == PipelineMessageNotification.PROCESS_END) {
-			if (flowToCheck.equals(event.getFlowConstruct()
-										.getName())) {
+			if (flowToCheck.equals(event.getFlowConstruct().getName())) {
 				readyToContinue = true;
 				notificatedPayload = message.getPayload();
 			}
