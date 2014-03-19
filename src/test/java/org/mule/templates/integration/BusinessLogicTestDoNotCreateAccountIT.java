@@ -14,13 +14,18 @@ import org.junit.Test;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.MuleException;
+import org.mule.context.notification.NotificationException;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
+import org.mule.tck.probe.PollingProber;
+import org.mule.tck.probe.Prober;
+import org.mule.templates.test.utils.ListenerProbe;
+import org.mule.templates.test.utils.PipelineSynchronizeListener;
 
 import com.mulesoft.module.batch.BatchTestHelper;
 import com.sforce.soap.partner.SaveResult;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule Kick that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Mule Templates that make calls to external systems.
  * 
  * The test will invoke the batch process and afterwards check that the opportunities had been correctly created and that the ones that should be filtered are not in
  * the destination sand box.

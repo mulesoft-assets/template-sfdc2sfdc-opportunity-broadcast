@@ -23,7 +23,7 @@ import org.mule.templates.builders.SfdcObjectBuilder;
 import org.mule.transport.NullPayload;
 
 /**
- * This is the base test class for Kicks integration tests.
+ * This is the base test class for Templates integration tests.
  * 
  * @author cesar.garcia
  */
