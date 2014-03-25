@@ -7,7 +7,7 @@
     * [Properties to be configured](#propertiestobeconfigured)
 + [Customize It!](#customizeit)
     * [config.xml](#configxml)
-    * [inboundEndpoints.xml](#inboundendpointsxml)
+    * [endpoints.xml](#endpointsxml)
     * [businessLogic.xml](#businesslogicxml)
     * [errorHandling.xml](#errorhandlingxml)
 + [Testing the Template](#testingthetemplate)
@@ -29,7 +29,7 @@ Finally during the On Complete stage the Template will logoutput statistics data
 
 # Run it!
 
-Simple steps to get SFDC to SFDC Opportunities Sync running.
+Simple steps to get SFDC to SFDC Opportunity Broadcast running.
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 
@@ -85,7 +85,7 @@ Of course more files will be found such as Test Classes and [Mule Application Fi
 Here is a list of the main XML files you'll find in this application:
 
 * [config.xml](#configxml)
-* [inboundEndpoints.xml](#inboundendpointsxml)
+* [endpoints.xml](#endpointsxml)
 * [businessLogic.xml](#businesslogicxml)
 * [errorHandling.xml](#errorhandlingxml)
 
@@ -104,8 +104,8 @@ Functional aspect of the Template is implemented on this XML, directed by one fl
 3. The last step of the Process stage will group the users and create/update them in SFDC Org B.
 Finally during the On Complete stage the Template will logoutput statistics data into the console.
 
-## inboundEndpoints.xml<a name="inboundendpointsxml"/>
-This is file is not used in this particular Template, but you'll oftenly find flows containing the inbound endpoints to start the integration.
+## endpoints.xml<a name="endpointsxml"/>
+This is file is not used in this particular Template, but you'll oftenly find flows containing the endpoints to start the integration.
 
 ## errorHandling.xml<a name="errorhandlingxml"/>
 Contains a [Catch Exception Strategy](http://www.mulesoft.org/documentation/display/current/Catch+Exception+Strategy) that is only Logging the exception thrown (If so). As you imagine, this is the right place to handle how your integration will react depending on the different exceptions.
