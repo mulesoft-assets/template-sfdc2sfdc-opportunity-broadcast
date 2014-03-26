@@ -27,15 +27,12 @@ import com.mulesoft.module.batch.BatchTestHelper;
 import com.sforce.soap.partner.SaveResult;
 
 /**
- * The objective of this class is to validate the correct behavior of the Mule
- * Template that make calls to external systems.
+ * The objective of this class is to validate the correct behavior of the Mule Template that make calls to external systems.
  * 
- * The test will invoke the batch process and afterwards check that the
- * opportunities had been correctly created and that the ones that should be
- * filtered are not in the destination sand box.
+ * The test will invoke the batch process and afterwards check that the opportunities had been correctly created and that the ones that should be filtered are
+ * not in the destination sand box.
  * 
- * The test validates that an account will get sync as result of the
- * integration.
+ * The test validates that an account will get sync as result of the integration.
  * 
  * @author cesar.garcia
  */
@@ -44,8 +41,7 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 	private static final String POLL_FLOW_NAME = "triggerFlow";
 
 	private final Prober pollProber = new PollingProber(10000, 1000);
-	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(
-			POLL_FLOW_NAME);
+	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
 
 	private BatchTestHelper helper;
 	private List<Map<String, Object>> createdOpportunities = new ArrayList<Map<String, Object>>();
@@ -64,9 +60,7 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 
 		// Setting Default Watermark Expression to query SFDC with
 		// LastModifiedDate greater than ten seconds before current time
-		System.setProperty(
-				"watermark.default.expression",
-				"#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
+		System.setProperty("watermark.default.expression", "#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
 
 		System.setProperty("account.sync.policy", "syncAccount");
 		System.setProperty("account.id.in.b", "");
@@ -119,29 +113,16 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 		helper.awaitJobTermination(TIMEOUT_SEC * 1000, 500);
 		helper.assertJobWasSuccessful();
 
-		Assert.assertEquals(
-				"The opportunity should not have been sync",
-				null,
-				invokeRetrieveFlow(checkOpportunityflow,
-						createdOpportunities.get(0)));
+		Assert.assertEquals("The opportunity should not have been sync", null, invokeRetrieveFlow(checkOpportunityflow, createdOpportunities.get(0)));
 
-		Assert.assertEquals(
-				"The opportunity should not have been sync",
-				null,
-				invokeRetrieveFlow(checkOpportunityflow,
-						createdOpportunities.get(1)));
+		Assert.assertEquals("The opportunity should not have been sync", null, invokeRetrieveFlow(checkOpportunityflow, createdOpportunities.get(1)));
 
-		Map<String, Object> accountPayload = invokeRetrieveFlow(
-				checkAccountflow, createdAccounts.get(0));
-		Map<String, Object> contacPayload = invokeRetrieveFlow(
-				checkOpportunityflow, createdOpportunities.get(2));
-		Assert.assertEquals("The opportunity should have been sync",
-				createdOpportunities.get(2).get("Name"),
-				contacPayload.get("Name"));
+		Map<String, Object> accountPayload = invokeRetrieveFlow(checkAccountflow, createdAccounts.get(0));
+		Map<String, Object> contacPayload = invokeRetrieveFlow(checkOpportunityflow, createdOpportunities.get(2));
+		Assert.assertEquals("The opportunity should have been sync", createdOpportunities.get(2)
+																							.get("Name"), contacPayload.get("Name"));
 
-		Assert.assertEquals(
-				"The opportunity should belong to a different account ",
-				accountPayload.get("Id"), contacPayload.get("AccountId"));
+		Assert.assertEquals("The opportunity should belong to a different account ", accountPayload.get("Id"), contacPayload.get("AccountId"));
 	}
 
 	private void createTestDataInSandBox() throws MuleException, Exception {
@@ -153,27 +134,24 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 	private void createAccounts() throws Exception {
 		SubflowInterceptingChainLifecycleWrapper flow = getSubFlow("createAccountFlow");
 		flow.initialise();
-		createdAccounts
-				.add(anAccount()
-						.with("Name",
-								buildUniqueName(TEMPLATE_NAME,
-										"ReferencedAccountTest"))
-						.with("BillingCity", "San Francisco")
-						.with("BillingCountry", "USA")
-						.with("Phone", "123456789")
-						.with("Industry", "Education")
-						.with("NumberOfEmployees", 9000).build());
+		createdAccounts.add(anAccount().with("Name", buildUniqueName(TEMPLATE_NAME, "ReferencedAccountTest"))
+										.with("BillingCity", "San Francisco")
+										.with("BillingCountry", "USA")
+										.with("Phone", "123456789")
+										.with("Industry", "Education")
+										.with("NumberOfEmployees", 9000)
+										.build());
 
-		MuleEvent event = flow.process(getTestEvent(createdAccounts,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		MuleEvent event = flow.process(getTestEvent(createdAccounts, MessageExchangePattern.REQUEST_RESPONSE));
 		List<SaveResult> results = (List<SaveResult>) event.getMessage()
-				.getPayload();
+															.getPayload();
 		for (int i = 0; i < results.size(); i++) {
-			createdAccounts.get(i).put("Id", results.get(i).getId());
+			createdAccounts.get(i)
+							.put("Id", results.get(i)
+												.getId());
 		}
 
-		System.out.println("Results of data creation in sandbox"
-				+ createdAccounts.toString());
+		System.out.println("Results of data creation in sandbox" + createdAccounts.toString());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -194,15 +172,17 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 		// This opportunity should BE sync with it's account
 		opportunity = createOpportunity("A", 2);
 		opportunity.put("Amount", 30000);
-		opportunity.put("AccountId", createdAccounts.get(0).get("Id"));
+		opportunity.put("AccountId", createdAccounts.get(0)
+													.get("Id"));
 		createdOpportunities.add(opportunity);
 
-		MuleEvent event = flow.process(getTestEvent(createdOpportunities,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		MuleEvent event = flow.process(getTestEvent(createdOpportunities, MessageExchangePattern.REQUEST_RESPONSE));
 		List<SaveResult> results = (List<SaveResult>) event.getMessage()
-				.getPayload();
+															.getPayload();
 		for (int i = 0; i < results.size(); i++) {
-			createdOpportunities.get(i).put("Id", results.get(i).getId());
+			createdOpportunities.get(i)
+								.put("Id", results.get(i)
+													.getId());
 		}
 	}
 

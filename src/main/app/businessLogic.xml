@@ -33,7 +33,7 @@ http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/cor
                         <enricher doc:name="store result in idOfAccountInB" target="#[recordVars['idOfAccountInB']]">
 	                        <processor-chain doc:name="Processor Chain">
                                 <expression-component doc:name="remove unnecessary fields"><![CDATA[payload['Account'].remove('Id');
-payload['Account'].put('NumberOfEmployees', Integer.parseInt(payload['Account']['NumberOfEmployees']) );]]></expression-component>
+payload['Account'].put('NumberOfEmployees', payload['Account']['NumberOfEmployees'] == null ? 0 :  Integer.parseInt(payload['Account']['NumberOfEmployees']));]]></expression-component>
                                 <set-payload value="#[ [payload['Account']]]" doc:name="Set Payload"/>
        		                     <sfdc:create config-ref="SalesforceB" type="Account" doc:name="create Account in Salesforce Instance B">
        	    	                     <sfdc:objects ref="#[payload]"/>
