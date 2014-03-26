@@ -3,9 +3,8 @@ package org.mule.templates.test.utils;
 import org.mule.tck.probe.Probe;
 
 /**
- * This {@link Probe} receives a {@link PipelineSynchronizeListener} as a
- * parameter upon construction. It will check the readyToContinue method of the
- * same to validate if the Probe has been completed.
+ * This {@link Probe} receives a {@link PipelineSynchronizeListener} as a parameter upon construction. It will check the readyToContinue method of the same to
+ * validate if the Probe has been completed.
  * 
  * @author damiansima
  */

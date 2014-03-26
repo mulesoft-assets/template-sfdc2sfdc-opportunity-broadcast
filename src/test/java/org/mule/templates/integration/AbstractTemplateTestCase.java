@@ -64,9 +64,11 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		File[] listOfFiles = testFlowsFolder.listFiles();
 		if (listOfFiles != null) {
 			for (File f : listOfFiles) {
-				if (f.isFile() && f.getName().endsWith("xml")) {
-					resources.append(",").append(TEST_FLOWS_FOLDER_PATH)
-							.append(f.getName());
+				if (f.isFile() && f.getName()
+									.endsWith("xml")) {
+					resources.append(",")
+								.append(TEST_FLOWS_FOLDER_PATH)
+								.append(f.getName());
 				}
 			}
 			return resources.toString();
@@ -82,14 +84,12 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		String pathToResource = MAPPINGS_FOLDER_PATH;
 		File graphFile = new File(pathToResource);
 
-		properties.put(MuleProperties.APP_HOME_DIRECTORY_PROPERTY,
-				graphFile.getAbsolutePath());
+		properties.put(MuleProperties.APP_HOME_DIRECTORY_PROPERTY, graphFile.getAbsolutePath());
 
 		return properties;
 	}
 
-	protected void deleteTestOpportunityFromSandBox(
-			List<Map<String, Object>> createdOpportunities) throws Exception {
+	protected void deleteTestOpportunityFromSandBox(List<Map<String, Object>> createdOpportunities) throws Exception {
 		List<String> idList = new ArrayList<String>();
 
 		// Delete the created opportunities in A
@@ -98,26 +98,22 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		for (Map<String, Object> c : createdOpportunities) {
 			idList.add((String) c.get("Id"));
 		}
-		flow.process(getTestEvent(idList,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 		idList.clear();
 
 		// Delete the created opportunities in B
 		flow = getSubFlow("deleteOpportunityFromBFlow");
 		flow.initialise();
 		for (Map<String, Object> c : createdOpportunities) {
-			Map<String, Object> opportunity = invokeRetrieveFlow(
-					checkOpportunityflow, c);
+			Map<String, Object> opportunity = invokeRetrieveFlow(checkOpportunityflow, c);
 			if (opportunity != null) {
 				idList.add((String) opportunity.get("Id"));
 			}
 		}
-		flow.process(getTestEvent(idList,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 	}
 
-	protected void deleteTestAccountFromSandBox(
-			List<Map<String, Object>> createdAccounts) throws Exception {
+	protected void deleteTestAccountFromSandBox(List<Map<String, Object>> createdAccounts) throws Exception {
 		// Delete the created accounts in A
 		SubflowInterceptingChainLifecycleWrapper flow = getSubFlow("deleteAccountFromAFlow");
 		flow.initialise();
@@ -126,22 +122,19 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		for (Map<String, Object> c : createdAccounts) {
 			idList.add(c.get("Id"));
 		}
-		flow.process(getTestEvent(idList,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 
 		// Delete the created accounts in B
 		flow = getSubFlow("deleteAccountFromBFlow");
 		flow.initialise();
 		idList.clear();
 		for (Map<String, Object> c : createdAccounts) {
-			Map<String, Object> account = invokeRetrieveFlow(checkAccountflow,
-					c);
+			Map<String, Object> account = invokeRetrieveFlow(checkAccountflow, c);
 			if (account != null) {
 				idList.add(account.get("Id"));
 			}
 		}
-		flow.process(getTestEvent(idList,
-				MessageExchangePattern.REQUEST_RESPONSE));
+		flow.process(getTestEvent(idList, MessageExchangePattern.REQUEST_RESPONSE));
 	}
 
 	protected String buildUniqueName(String templateName, String name) {
@@ -156,13 +149,11 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Map<String, Object> invokeRetrieveFlow(
-			SubflowInterceptingChainLifecycleWrapper flow,
-			Map<String, Object> payload) throws Exception {
-		MuleEvent event = flow.process(getTestEvent(payload,
-				MessageExchangePattern.REQUEST_RESPONSE));
+	protected Map<String, Object> invokeRetrieveFlow(SubflowInterceptingChainLifecycleWrapper flow, Map<String, Object> payload) throws Exception {
+		MuleEvent event = flow.process(getTestEvent(payload, MessageExchangePattern.REQUEST_RESPONSE));
 
-		Object resultPayload = event.getMessage().getPayload();
+		Object resultPayload = event.getMessage()
+									.getPayload();
 		if (resultPayload instanceof NullPayload) {
 			return null;
 		} else {
@@ -170,15 +161,13 @@ public class AbstractTemplateTestCase extends FunctionalTestCase {
 		}
 	}
 
-	protected Map<String, Object> createOpportunity(String orgId, int sequence)
-			throws ParseException {
-		return SfdcObjectBuilder
-				.anOpportunity()
-				.with("Name",
-						buildUniqueName(TEMPLATE_NAME, "OppName" + sequence
-								+ "_")).with("StageName", "NoStage")
-				.with("CloseDate", date("2050-10-10")).with("Probability", "1")
-				.build();
+	protected Map<String, Object> createOpportunity(String orgId, int sequence) throws ParseException {
+		return SfdcObjectBuilder.anOpportunity()
+								.with("Name", buildUniqueName(TEMPLATE_NAME, "OppName" + sequence + "_"))
+								.with("StageName", "NoStage")
+								.with("CloseDate", date("2050-10-10"))
+								.with("Probability", "1")
+								.build();
 
 	}
 
