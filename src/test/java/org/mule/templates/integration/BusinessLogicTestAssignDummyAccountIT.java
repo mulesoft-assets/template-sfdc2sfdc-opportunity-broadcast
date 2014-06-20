@@ -41,7 +41,7 @@ import com.mulesoft.module.batch.BatchTestHelper;
 public class BusinessLogicTestAssignDummyAccountIT extends AbstractTemplateTestCase {
 
 	private static final String POLL_FLOW_NAME = "triggerFlow";
-	private static final String ACCOUNT_ID_IN_B = "001n0000003gwUyAAI";
+	private static final String ACCOUNT_ID_IN_B = "0012000001AHHlvAAH";
 
 	private final Prober pollProber = new PollingProber(10000, 1000);
 	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
