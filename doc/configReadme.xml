@@ -23,18 +23,6 @@ Finally during the On Complete stage the Template will logoutput statistics data
 To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
 ]]>
 		</section>
-		<section id="run_it">
-<![CDATA[
-In any of the ways you would like to run this Anypoint Template this is an example of the output you'll see after hitting the HTTP endpoint:
-
-<pre>
-<h1>Batch Process initiated</h1>
-<b>ID:</b>6eea3cc6-7c96-11e3-9a65-55f9f3ae584e<br/>
-<b>Records to Be Processed: </b>9<br/>
-<b>Start execution on: </b>Mon Jan 13 18:05:33 GMT-03:00 2014
-</pre>
-]]>
-		</section>
 		<section id="running_on_standalone">
 <![CDATA[
 After this, to trigger the use case you just need to hit the local http endpoint with the port you configured in your file. If this is, for instance, `9090` then you should hit: `http://localhost:9090/migrateOpportunities` and this will create a CSV report and send it to the mails set.
