@@ -59,3 +59,7 @@ src/test/resources/mule.test.properties
 
 # Ignore vim temp files
 **/.*.un~
+
+pom.xml.releaseBackup
+
+release.properties
