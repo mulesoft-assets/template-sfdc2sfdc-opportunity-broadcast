@@ -66,6 +66,9 @@ public class BusinessLogicTestDoNotCreateAccountIT extends AbstractTemplateTestC
 		// Setting Default Watermark Expression to query SFDC with
 		// LastModifiedDate greater than ten seconds before current time
 		System.setProperty("watermark.default.expression", "#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
+		
+		// Set trigger policy to poll
+		System.setProperty("trigger.policy", "poll");
 
 		System.setProperty("account.sync.policy", "");
 		System.setProperty("account.id.in.b", "");
@@ -73,6 +76,7 @@ public class BusinessLogicTestDoNotCreateAccountIT extends AbstractTemplateTestC
 
 	@AfterClass
 	public static void shutDown() {
+		System.clearProperty("trigger.policy");
 		System.clearProperty("account.sync.policy");
 		System.clearProperty("account.id.in.b");
 	}
@@ -145,12 +149,9 @@ public class BusinessLogicTestDoNotCreateAccountIT extends AbstractTemplateTestC
 		createdOpportunities.add(opportunity);
 
 		MuleEvent event = flow.process(getTestEvent(createdOpportunities, MessageExchangePattern.REQUEST_RESPONSE));
-		List<SaveResult> results = (List<SaveResult>) event.getMessage()
-															.getPayload();
+		List<SaveResult> results = (List<SaveResult>) event.getMessage().getPayload();
 		for (int i = 0; i < results.size(); i++) {
-			createdOpportunities.get(i)
-								.put("Id", results.get(i)
-													.getId());
+			createdOpportunities.get(i).put("Id", results.get(i).getId());
 		}
 	}
 

@@ -67,6 +67,9 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 		// Setting Default Watermark Expression to query SFDC with
 		// LastModifiedDate greater than ten seconds before current time
 		System.setProperty("watermark.default.expression", "#[groovy: new Date(System.currentTimeMillis() - 10000).format(\"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'\", TimeZone.getTimeZone('UTC'))]");
+		
+		// Set trigger policy to poll
+		System.setProperty("trigger.policy", "poll");
 
 		System.setProperty("account.sync.policy", "syncAccount");
 		System.setProperty("account.id.in.b", "");
@@ -75,6 +78,7 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 
 	@AfterClass
 	public static void shutDown() {
+		System.clearProperty("trigger.policy");
 		System.clearProperty("account.sync.policy");
 	}
 
@@ -125,9 +129,7 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 
 		Map<String, Object> accountPayload = invokeRetrieveFlow(checkAccountflow, createdAccounts.get(0));
 		Map<String, Object> contacPayload = invokeRetrieveFlow(checkOpportunityflow, createdOpportunities.get(2));
-		Assert.assertEquals("The opportunity should have been sync", createdOpportunities.get(2)
-																							.get("Name"), contacPayload.get("Name"));
-
+		Assert.assertEquals("The opportunity should have been sync", createdOpportunities.get(2).get("Name"), contacPayload.get("Name"));
 		Assert.assertEquals("The opportunity should belong to a different account ", accountPayload.get("Id"), contacPayload.get("AccountId"));
 	}
 
@@ -183,12 +185,9 @@ public class BusinessLogicTestCreateAccountIT extends AbstractTemplateTestCase {
 		createdOpportunities.add(opportunity);
 
 		MuleEvent event = flow.process(getTestEvent(createdOpportunities, MessageExchangePattern.REQUEST_RESPONSE));
-		List<SaveResult> results = (List<SaveResult>) event.getMessage()
-															.getPayload();
+		List<SaveResult> results = (List<SaveResult>) event.getMessage().getPayload();
 		for (int i = 0; i < results.size(); i++) {
-			createdOpportunities.get(i)
-								.put("Id", results.get(i)
-													.getId());
+			createdOpportunities.get(i).put("Id", results.get(i).getId());
 		}
 	}
 

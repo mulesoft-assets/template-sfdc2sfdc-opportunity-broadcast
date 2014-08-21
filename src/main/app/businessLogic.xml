@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
 	xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" 
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
-	version="EE-3.5.0"
+	version="EE-3.5.1"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
-http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 	<batch:job name="syncOpportunitiesBatch">
 		<batch:threading-profile poolExhaustedAction="WAIT" />
 		<batch:process-records>
@@ -68,16 +69,21 @@ payload.remove('LastModifiedDate');
 if (payload.get('Amount') == null) {
 	payload.remove('Amount') 
 } else {
-	double doubleAmount = Double.parseDouble(payload.get('Amount'));
-	payload.put('Amount', doubleAmount);
+	if(payload.get('Amount') instanceof  String) {
+		double doubleAmount = Double.parseDouble(payload.get('Amount'));
+		payload.put('Amount', doubleAmount);
+	}
 }
 
 if (payload.get('CloseDate') == null) {
 	payload.remove('CloseDate') 
 } else {
-	java.util.Date dateCloseDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(payload.get('CloseDate'));
-	payload.put('CloseDate', dateCloseDate);
-}]]></expression-component>
+    if(payload.get('CloseDate') instanceof String) {
+		java.util.Date dateCloseDate = new java.text.SimpleDateFormat("yyyy-MM-dd").parse(payload.get('CloseDate'));
+		payload.put('CloseDate', dateCloseDate);
+	}
+}
+]]></expression-component>
 				<batch:commit size="200" doc:name="Batch Commit">
                     <logger message="Opportunities to update/create: #[payload]" level="INFO" doc:name="log Opportunities to update/create"/>
                     <sfdc:upsert config-ref="SalesforceB" externalIdFieldName="Id" type="Opportunity" doc:name="upsert Opportunities in Salesforce Instance B">
@@ -94,5 +100,9 @@ if (payload.get('CloseDate') == null) {
 				message="Migration process has finished: #[payload]" />
 		</batch:on-complete>
 	</batch:job>
+    <flow name="mainFlow" doc:name="mainFlow">
+        <batch:execute name="syncOpportunitiesBatch" doc:name="trigger syncOpportunitiesBatch"/>
+        <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
+    </flow>
 
 </mule>

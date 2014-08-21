@@ -6,8 +6,6 @@
 
 package org.mule.templates.integration;
 
-import static org.mule.templates.builders.SfdcObjectBuilder.anOpportunity;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.text.ParseException;
@@ -22,6 +20,7 @@ import org.junit.Rule;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
 import org.mule.api.config.MuleProperties;
+import org.mule.construct.Flow;
 import org.mule.processor.chain.SubflowInterceptingChainLifecycleWrapper;
 import org.mule.tck.junit4.FunctionalTestCase;
 import org.mule.tck.junit4.rule.DynamicPort;
@@ -191,5 +190,9 @@ public abstract class AbstractTemplateTestCase extends FunctionalTestCase {
 		builder.append(".com");
 
 		return builder.toString();
+	}
+	
+	protected Flow getFlow(String flowName) {
+		return (Flow) muleContext.getRegistry().lookupObject(flowName);
 	}
 }
