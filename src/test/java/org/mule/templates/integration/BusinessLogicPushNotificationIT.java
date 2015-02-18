@@ -39,7 +39,6 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	
 	private static final String POLL_FLOW_NAME = "triggerFlow";
 	private static final int TIMEOUT_MILLIS = 60;
-	private static final String ACCOUNT_ID_IN_B = "0012000001AHHlvAAH";
 	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
 	private BatchTestHelper helper;
 	private Flow triggerPushFlow;
@@ -48,15 +47,13 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	@BeforeClass
 	public static void beforeClass() {
 		System.setProperty("trigger.policy", "push");
-		System.setProperty("account.sync.policy", "assignDummyAccount");
-		System.setProperty("account.id.in.b", ACCOUNT_ID_IN_B);
+		System.setProperty("account.sync.policy", "");
 	}
 
 	@AfterClass
 	public static void shutDown() {
 		System.clearProperty("trigger.policy");
 		System.clearProperty("account.sync.policy");
-		System.clearProperty("account.id.in.b");
 	}
 
 	@Before
@@ -127,16 +124,16 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		request.append("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
 		request.append("<soapenv:Body>");
 		request.append("  <notifications xmlns=\"http://soap.sforce.com/2005/09/outbound\">");
-		request.append("   <OrganizationId>00Dd0000000dtDqEAI</OrganizationId>");
-		request.append("   <ActionId>04kd0000000PCgvAAG</ActionId>");
+		request.append("   <OrganizationId>00D20000000nW7aEAE</OrganizationId>");
+		request.append("   <ActionId>04k200000001DnoAAE</ActionId>");
 		request.append("   <SessionId xsi:nil=\"true\"/>");
-		request.append("   <EnterpriseUrl>https://na14.salesforce.com/services/Soap/c/30.0/00Dd0000000dtDq</EnterpriseUrl>");
-		request.append("   <PartnerUrl>https://na14.salesforce.com/services/Soap/u/30.0/00Dd0000000dtDq</PartnerUrl>");
+		request.append("   <EnterpriseUrl>https://emea.salesforce.com/services/Soap/c/31.0/00D20000000nW7a</EnterpriseUrl>");
+		request.append("   <PartnerUrl>https://emea.salesforce.com/services/Soap/u/31.0/00D20000000nW7a</PartnerUrl>");
 		request.append("   <Notification>");
 		request.append("     <Id>04l2000000KFmjJAAT</Id>");
 		request.append("     <sObject xsi:type=\"sf:Opportunity\" xmlns:sf=\"urn:sobject.enterprise.soap.sforce.com\">");
 		request.append("       <sf:Id>0062000000ZZpewAAD</sf:Id>");
-		request.append("       <sf:AccountId>0012000001AOHpxAAH</sf:AccountId>");
+		//request.append("       <sf:AccountId>0012000001AOHpxAAH</sf:AccountId>");
 		request.append("       <sf:Amount>12.0</sf:Amount>");
 		request.append("       <sf:CloseDate>2017-08-04</sf:CloseDate>");
 		request.append("       <sf:Description>description</sf:Description>");

@@ -5,7 +5,7 @@
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
-	version="EE-3.5.1"
+	version="EE-3.5.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
@@ -51,9 +51,7 @@ payload['Account'].put('NumberOfEmployees', payload['Account']['NumberOfEmployee
                 </choice>
                 <expression-component doc:name="set Account ID"><![CDATA[payload.put('AccountId', recordVars['idOfAccountInB']);]]></expression-component>
             </batch:step>
-            <batch:step name="setDummyAccountIdStep" accept-expression="'assignDummyAccount' == '${account.sync.policy}'">
-                <expression-component doc:name="set Account ID"><![CDATA[payload.put('AccountId', '${account.id.in.b}');]]></expression-component>
-            </batch:step>
+
 			<batch:step name="foreachOpportunityInAUpsertOpportunityInBStep">
 				<expression-component doc:name="set ID for upsert"><![CDATA[if (recordVars['opportunityInB'] instanceof NullPayload) {
 	// Remove ID as it is an insert

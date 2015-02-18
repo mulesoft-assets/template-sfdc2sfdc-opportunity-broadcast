@@ -71,14 +71,12 @@ public class BusinessLogicTestDoNotCreateAccountIT extends AbstractTemplateTestC
 		System.setProperty("trigger.policy", "poll");
 
 		System.setProperty("account.sync.policy", "");
-		System.setProperty("account.id.in.b", "");
 	}
 
 	@AfterClass
 	public static void shutDown() {
 		System.clearProperty("trigger.policy");
 		System.clearProperty("account.sync.policy");
-		System.clearProperty("account.id.in.b");
 	}
 
 	@Before

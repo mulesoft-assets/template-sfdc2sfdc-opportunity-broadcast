@@ -5,7 +5,7 @@ xmlns="http://www.mulesoft.org/schema/mule/core"
 xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.5.1" 
+version="EE-3.5.2" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -32,7 +32,7 @@ http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schem
         <http:response-builder status="200" contentType="application/xml" doc:name="build Http response"/>
     </flow>
 
-	<!-- 	In this file you should declare all your inbound endpoints and from here controll the access to your application -->
+	<!-- 	In this file you should declare all your inbound endpoints and from here control the access to your application -->
 
     <flow name="triggerFlow" processingStrategy="synchronous"   doc:name="triggerFlow" doc:description="This is the simpliest entry point to start the excecution of your Template
 Here you should: 
