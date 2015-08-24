@@ -25,21 +25,22 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to synchronize opportunities between two Salesfoce orgs.
+As a Salesforce admin I want to synchronize opportunities from one Salesfoce org to another.
 
-This Template should serve as a foundation for setting an online sync of opportunities from one SalesForce instance to another. Every time there is a new opportunity or a change in an already existing one, the integration will poll for changes in SalesForce source instance and it will be responsible for updating the opportunity on the target org.
+This Template should serve as a foundation for setting an online sync of opportunities from one Salesforce instance to another. Every time there is a new opportunity or a change in an already existing one, the integration will poll for changes in Salesforce source instance and it will be responsible for updating the opportunity on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
 As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing) and [Outbound messaging](https://www.salesforce.com/us/developer/docs/api/Content/sforce_api_om_outboundmessaging.htm)
 The batch job is divided in Input, Process and On Complete stages.
-The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest SalesForce updates/creations matching a filter criteria and executing the batch job.
-During the Process stage, each SFDC User will be filtered depending on, if it has an existing matching user in the SFDC Org B.
-The last step of the Process stage will group the users and create/update them in SFDC Org B.
+The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest Salesforce updates/creations matching a filter criteria and executing the batch job.
+During the Process stage, each SFDC Opportunity will be filtered depending on, if it has an existing matching Opportunity in the SFDC Org B.
+The last step of the Process stage will group the Opportunities and create/update them in SFDC Org B.
+
 The integration could be also triggered by http inbound connector defined in the flow that is going to trigger the application and executing the batch job with received message from Salesforce source instance.
 Outbound messaging in Salesforce allows you to specify that changes to fields within Salesforce can cause messages with field values to be sent to designated external servers.
-Outbound messaging is part of the workflow rule functionality in Salesforce. Workflow rules watch for specific kinds of field changes and trigger automatic Salesforce actions in this case sending opportunities as an outbound message to Mule Http inbound connector,
-which will then further process this message and creates Contacts in target Salesforce org.
+Outbound messaging is part of the workflow rule functionality in Salesforce. Workflow rules watch for specific kinds of field changes and trigger automatic Salesforce actions in this case sending Opportunities as an outbound message to Mule Http inbound connector,
+which will then further process this message and creates Opportunities in target Salesforce org.
 Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
 
 # Considerations <a name="considerations"/>
@@ -131,11 +132,11 @@ Once you have imported you Anypoint Template into Anypoint Studio you need to fo
 
 ### Running on Mule ESB stand alone <a name="runonmuleesbstandalone"/>
 Complete all properties in one of the property files, for example in [mule.prod.properties] (../master/src/main/resources/mule.prod.properties) and run your app with the corresponding environment variable to use it. To follow the example, this will be `mule.env=prod`. 
-After this, to trigger the use case you just need to hit the local http endpoint with the port you configured in your file. If this is, for instance, `9090` then you should hit: `http://localhost:9090/migrateOpportunities` and this will create a CSV report and send it to the mails set.
+After this, to trigger the use case you just need to hit the local http endpoint with the port you configured in your file. If this is, for instance, `9090` then you should hit: `http://localhost:9090/migrateOpportunities` and this will do the migration.
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**.
-Once your app is all set and started, there is no need to do anything else. Every time a opportunity is created or modified, it will be automatically synchronised to SFDC Org B as long as it has an Email.
+Once your app is all set and started, there is no need to do anything else. Every time an Opportunity is created or modified, it will be automatically synchronised to SFDC Org B.
 
 ### Deploying your Anypoint Template on CloudHub <a name="deployingyouranypointtemplateoncloudhub"/>
 Mule Studio provides you with really easy way to deploy your Template directly to CloudHub, for the specific steps to do so please check this [link](http://www.mulesoft.org/documentation/display/current/Deploying+Mule+Applications#DeployingMuleApplications-DeploytoCloudHub)
@@ -147,12 +148,14 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + http.port `9090` 
 + poll.frequencyMillis `60000`
 + poll.startDelayMillis `0`
-+ watermark.defaultExpression `YESTERDAY`
++ watermark.default.expression `YESTERDAY`
++ page.size `100`
 
 #### Trigger policy(push, poll)
 
 + trigger.policy `poll`
-This property define, which policy should be used for synchronization. When the push policy is selected, the HTTP inbound connector is used for Salesforce's outbound messaging and polling mechanism is ignored.
+
+**Note:** This property define, which policy should be used for synchronization. When the push policy is selected, the HTTP inbound connector is used for Salesforce's outbound messaging and polling mechanism is ignored.
 
 
 #### Account Sync Policy
@@ -160,20 +163,20 @@ This property define, which policy should be used for synchronization. When the 
 
 **Note:** the property **account.sync.policy** can take any of the two following values: 
 
-+ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the contact over.
-+ **syncAccount**: it will try to create the contact's account should this is not pressent in the Salesforce instance B.
++ **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the Opportunity over.
++ **syncAccount**: it will try to create the Opportunity's account if this is not pressent in the Salesforce instance B.
 
-#### SalesForce Connector configuration for company A
+#### Salesforce Connector configuration for company A
 + sfdc.a.username `bob.dylan@orga`
 + sfdc.a.password `DylanPassword123`
 + sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
-+ sfdc.a.url `https://login.salesforce.com/services/Soap/u/31.0`
++ sfdc.a.url `https://login.salesforce.com/services/Soap/u/32.0`
 
-#### SalesForce Connector configuration for company B
+#### Salesforce Connector configuration for company B
 + sfdc.b.username `joan.baez@orgb`
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
-+ sfdc.b.url `https://login.salesforce.com/services/Soap/u/31.0`
++ sfdc.b.url `https://login.salesforce.com/services/Soap/u/32.0`
 
 # API Calls <a name="apicalls"/>
 Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:
@@ -207,17 +210,16 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the Template is implemented on this XML, directed by one flow that will poll for SalesForce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Template:
+Functional aspect of the Template is implemented on this XML, directed by one flow that will poll for Salesforce creations/updates. The severeal message processors constitute four high level actions that fully implement the logic of this Template:
 
-1. During the Input stage the Template will go to the SalesForce Org A and query all the existing opportunities that match the filter criteria.
-2. During the Process stage, each SFDC opportunity will be filtered depending on, if it has an existing matching opportunity in the SFDC Org B.
-3. The last step of the Process stage will group the opportunities and create/update them in SFDC Org B.
-Finally during the On Complete stage the Template will logoutput statistics data into the console.
+1. During the Process stage, each SFDC opportunity will be filtered depending on, if it has an existing matching opportunity in the SFDC Org B.
+2. The last step of the Process stage will group the opportunities and create/update them in SFDC Org B.
+3. Finally during the On Complete stage the Template will logoutput statistics data into the console.
 
 
 
 ## endpoints.xml<a name="endpointsxml"/>
-This is file is conformed by a Flow containing the Poll that will periodically query Salesforce for updated/created Opportunities that meet the defined criteria in the query. And then executing the batch job process with the query results.
+This is file is conformed by a Flow containing the Poll that will periodically query Salesforce for updated/created Opportunities that meet the defined criteria in the query and HTTP connector, which is listening for Saleforce's outbound messages. And then executing the batch job process with the query results.
 
 
 

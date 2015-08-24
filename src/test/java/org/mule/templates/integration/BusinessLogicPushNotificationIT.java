@@ -6,8 +6,9 @@
 
 package org.mule.templates.integration;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,13 +19,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mule.DefaultMuleMessage;
 import org.mule.MessageExchangePattern;
 import org.mule.api.MuleEvent;
-import org.mule.api.MuleMessage;
 import org.mule.construct.Flow;
 import org.mule.context.notification.NotificationException;
 import org.mule.templates.test.utils.PipelineSynchronizeListener;
+import org.mule.transformer.types.DataTypeFactory;
 
 import com.mulesoft.module.batch.BatchTestHelper;
 
@@ -42,7 +42,7 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	private final PipelineSynchronizeListener pipelineListener = new PipelineSynchronizeListener(POLL_FLOW_NAME);
 	private BatchTestHelper helper;
 	private Flow triggerPushFlow;
-	List<Map<String, Object>> createdOpportunities = new ArrayList<Map<String, Object>>();
+	private List<Map<String, Object>> createdOpportunities = new ArrayList<Map<String, Object>>();
 	
 	@BeforeClass
 	public static void beforeClass() {
@@ -89,8 +89,9 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 	public void testMainFlow() throws Exception {
 		// Execution
 		String name = buildUniqueName();
-		MuleMessage message = new DefaultMuleMessage(buildRequest(name), muleContext);
-		MuleEvent testEvent = getTestEvent(message, MessageExchangePattern.REQUEST_RESPONSE);
+		final MuleEvent testEvent = getTestEvent(null, triggerPushFlow);
+		testEvent.getMessage().setPayload(buildRequest(name), DataTypeFactory.create(InputStream.class, "application/xml"));
+
 		triggerPushFlow.process(testEvent);
 		
 		helper.awaitJobTermination(TIMEOUT_MILLIS * 1000, 500);
@@ -127,8 +128,8 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		request.append("   <OrganizationId>00D20000000nW7aEAE</OrganizationId>");
 		request.append("   <ActionId>04k200000001DnoAAE</ActionId>");
 		request.append("   <SessionId xsi:nil=\"true\"/>");
-		request.append("   <EnterpriseUrl>https://emea.salesforce.com/services/Soap/c/31.0/00D20000000nW7a</EnterpriseUrl>");
-		request.append("   <PartnerUrl>https://emea.salesforce.com/services/Soap/u/31.0/00D20000000nW7a</PartnerUrl>");
+		request.append("   <EnterpriseUrl>https://emea.salesforce.com/services/Soap/c/32.0/00D20000000nW7a</EnterpriseUrl>");
+		request.append("   <PartnerUrl>https://emea.salesforce.com/services/Soap/u/32.0/00D20000000nW7a</PartnerUrl>");
 		request.append("   <Notification>");
 		request.append("     <Id>04l2000000KFmjJAAT</Id>");
 		request.append("     <sObject xsi:type=\"sf:Opportunity\" xmlns:sf=\"urn:sobject.enterprise.soap.sforce.com\">");
@@ -137,7 +138,7 @@ public class BusinessLogicPushNotificationIT extends AbstractTemplateTestCase {
 		request.append("       <sf:Amount>12.0</sf:Amount>");
 		request.append("       <sf:CloseDate>2017-08-04</sf:CloseDate>");
 		request.append("       <sf:Description>description</sf:Description>");
-		request.append("       <sf:LastModifiedDate>2014-08-20T11:16:04.000Z</sf:LastModifiedDate>");
+		request.append("       <sf:LastModifiedDate>2015-07-20T11:16:04.000Z</sf:LastModifiedDate>");
 		request.append("       <sf:Name>" + name + "</sf:Name>");
 		request.append("       <sf:Probability>50.0</sf:Probability>");
 		request.append("       <sf:StageName>Value Proposition</sf:StageName>");
