@@ -4,8 +4,8 @@
    <OrganizationId>00D20000000nW7aEAE</OrganizationId>
    <ActionId>04k200000001DnoAAE</ActionId>
    <SessionId xsi:nil="true"/>
-   <EnterpriseUrl>https://emea.salesforce.com/services/Soap/c/31.0/00D20000000nW7a</EnterpriseUrl>
-   <PartnerUrl>https://emea.salesforce.com/services/Soap/u/31.0/00D20000000nW7a</PartnerUrl>
+   <EnterpriseUrl>https://emea.salesforce.com/services/Soap/c/32.0/00D20000000nW7a</EnterpriseUrl>
+   <PartnerUrl>https://emea.salesforce.com/services/Soap/u/32.0/00D20000000nW7a</PartnerUrl>
    <Notification>
     <Id>04l2000000KFmjJAAT</Id>
     <sObject xsi:type="sf:Opportunity" xmlns:sf="urn:sobject.enterprise.soap.sforce.com">
@@ -14,7 +14,7 @@
      <sf:Amount>12.0</sf:Amount>
      <sf:CloseDate>2017-08-04</sf:CloseDate>
      <sf:Description>description</sf:Description>
-     <sf:LastModifiedDate>2014-08-20T11:16:04.000Z</sf:LastModifiedDate>
+     <sf:LastModifiedDate>2015-07-20T11:16:04.000Z</sf:LastModifiedDate>
      <sf:Name>vlado test</sf:Name>
      <sf:Probability>50.0</sf:Probability>
      <sf:StageName>Value Proposition</sf:StageName>

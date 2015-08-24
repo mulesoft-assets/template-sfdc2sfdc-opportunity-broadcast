@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:data-mapper="http://www.mulesoft.org/schema/mule/ee/data-mapper" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" 
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:http="http://www.mulesoft.org/schema/mule/http" 
 xmlns="http://www.mulesoft.org/schema/mule/core" 
 xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.6.0" 
+version="EE-3.7.1" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -13,20 +13,22 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
-http://www.mulesoft.org/schema/mule/ee/data-mapper http://www.mulesoft.org/schema/mule/ee/data-mapper/current/mule-data-mapper.xsd">
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
 
 <!-- In this file you should declare all your inbound endpoints and from here control the access to your application -->
-
-    <data-mapper:config name="XML_To_Opportunity" transformationGraphPath="xml_to_opportunity.grf" doc:name="XML_To_Opportunity"/>
     <http:listener-config name="HTTP_Listener_Configuration" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
     <flow name="triggerPushFlow"  initialState="started">
         <http:listener config-ref="HTTP_Listener_Configuration" path="/" doc:name="HTTP"/>
 
         <choice doc:name="Trigger Policy">
             <when expression="#['push' == '${trigger.policy}']">
-                <object-to-string-transformer doc:name="Object to String"/>
                 <logger message="Message from outbound : #[payload]" level="INFO" doc:name="Log input payload"/>
-                <data-mapper:transform config-ref="XML_To_Opportunity" doc:name="XML To Opportunity"/>
+                <dw:transform-message doc:name="XML To Opportunity">
+                    <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.Envelope.Body.notifications.Notification.*sObject]]></dw:set-payload>
+                </dw:transform-message>
                 <flow-ref name="mainFlow" doc:name="trigger mainFlow"/>
             </when>
             <otherwise>
@@ -50,9 +52,9 @@ Here you should not:
              <sfdc:query config-ref="SalesforceA" doc:name="query Opportunities with filtering criteria from Salesforce Instance A" query="SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate, Type, Account.Id, Account.Name, Account.AccountNumber, Account.AccountSource, Account.AnnualRevenue, Account.BillingCity, Account.BillingCountry, Account.BillingPostalCode, Account.BillingState, Account.BillingStreet, Account.Description, Account.Fax, Account.Industry, Account.NumberOfEmployees, Account.Ownership, Account.ParentId, Account.Phone, Account.Rating, Account.ShippingCity, Account.ShippingCountry, Account.ShippingPostalCode, Account.ShippingState, Account.ShippingStreet, Account.Sic, Account.SicDesc, Account.Site, Account.TickerSymbol, Account.Type, Account.Website FROM Opportunity WHERE LastModifiedDate &gt; #[lastQueryDate] AND Amount &gt; 5000">
             </sfdc:query>
         </poll>
-        <logger message="#[payload]" level="INFO" doc:name="log Opportunities  to be created/updated"/>
         <choice doc:name="Trigger Policy">
             <when expression="#['poll' == '${trigger.policy}']">
+                <logger message="#[payload]" level="INFO" doc:name="log Opportunities  to be created/updated"/>
                 <flow-ref name="mainFlow" doc:name="trigger mainFlow"/>
             </when>
             <otherwise>
