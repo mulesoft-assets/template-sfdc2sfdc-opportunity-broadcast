@@ -25,7 +25,7 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to synchronize opportunities from one Salesfoce org to another.
+As a Salesforce admin I want to synchronize opportunities from one Salesforce org to another.
 
 This Template should serve as a foundation for setting an online sync of opportunities from one Salesforce instance to another. Every time there is a new opportunity or a change in an already existing one, the integration will poll for changes in Salesforce source instance and it will be responsible for updating the opportunity on the target org.
 
@@ -94,6 +94,10 @@ There are no particular considerations for this Anypoint Template regarding Sale
 
 
 
+
+
+
+
 # Run it! <a name="runit"/>
 Simple steps to get Salesforce to Salesforce Opportunity Broadcast running.
 
@@ -156,7 +160,6 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + trigger.policy `poll`
 
 **Note:** This property define, which policy should be used for synchronization. When the push policy is selected, the HTTP inbound connector is used for Salesforce's outbound messaging and polling mechanism is ignored.
-
 
 #### Account Sync Policy
 + account.sync.policy `syncAccount`

@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 		<batch:process-records>
 			<batch:step name="foreachOpportunityInAGetOpportunityInBStep">
 				<enricher source="#[payload == null ? null : payload.Id]" target="#[payload.Id]"
-					doc:name="Enrich payload with existing SFDC Opportunity Id">
+					doc:name="enrich payload with existing SFDC Opportunity Id">
 					<sfdc:query-single config-ref="SalesforceB"
 						query="SELECT Id FROM Opportunity WHERE Name = '#[payload['Name']]'"
 						doc:name="query Opportunity in Salesforce Instance B" />
@@ -85,7 +85,7 @@ payload map {
 				message="Migration process has finished: #[payload]" />
 		</batch:on-complete>
 	</batch:job>
-    <flow name="mainFlow" doc:name="mainFlow">
+    <flow name="mainFlow" >
         <batch:execute name="syncOpportunitiesBatch" doc:name="trigger syncOpportunitiesBatch"/>
         <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
