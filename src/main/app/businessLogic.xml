@@ -27,11 +27,11 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 				</enricher>
 			</batch:step>
 			 <batch:step name="findOrCreateAccountInBSetp" accept-expression="#['syncAccount' == '${account.sync.policy}' &amp;&amp; payload.Account != null]">
-                <enricher source="#[payload == null ? null : payload.Id]" target="#[flowVars['accountInBId']]" doc:name="store result in accountInBId">
+                <enricher source="#[payload == null ? null : payload.Id]" target="#[recordVars['accountInBId']]" doc:name="store result in accountInBId">
                     <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Account WHERE Name = '#[payload['Account']['Name']]'" doc:name="query Account in  Salesforce Instance B"/>
                 </enricher>
                 <choice doc:name="Choice">
-                    <when expression="#[flowVars.accountInB == null]">
+                    <when expression="#[recordVars.accountInB == null]">
                         <enricher doc:name="enrich payload with AccountId" target="#[payload.AccountId]" source="#[payload[0].getId()]">
 	                        <processor-chain doc:name="Processor Chain">
                                 <dw:transform-message doc:name="Prepare Account data">
@@ -51,7 +51,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
                     </when>
                     <otherwise>
                         <enricher target="#[payload.AccountId]" doc:name="enrich payload with AccountId" source="#[payload]">
-     	                   <expression-transformer expression="#[flowVars.accountInBId]" doc:name="get existing account id"/>
+     	                   <expression-transformer expression="#[recordVars.accountInBId]" doc:name="get existing account id"/>
                         </enricher>
                     </otherwise>
                 </choice>
