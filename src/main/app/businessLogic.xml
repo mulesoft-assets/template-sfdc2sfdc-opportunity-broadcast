@@ -40,7 +40,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 ---
 [payload.Account
 - "Id"
-++ ("NumberOfEmployees": payload.Account.NumberOfEmployees as :number when payload.Account.NumberOfEmployees != null otherwise 0)
+++ ("NumberOfEmployees": payload.Account.NumberOfEmployees as :number {class: "java.lang.Integer"} default 0)
 ]]]></dw:set-payload>
                                 </dw:transform-message>
        		                     <sfdc:create config-ref="SalesforceB" type="Account" doc:name="create Account in Salesforce Instance B">
@@ -66,7 +66,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 payload map {
 ($ - "LastModifiedDate"
  - "Account"
-++ ("Amount": $.Amount as :number when $.Amount != null otherwise 0)
+++ ("Amount": $.Amount as :number {class: "java.lang.Double"} default 0)
 ++ ("CloseDate": $.CloseDate as :date when $.CloseDate != null otherwise null))
 }]]></dw:set-payload>
                     </dw:transform-message>
