@@ -5,7 +5,7 @@ xmlns="http://www.mulesoft.org/schema/mule/core"
 xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc"
 xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
 xmlns:spring="http://www.springframework.org/schema/beans" 
-version="EE-3.7.1" 
+ 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
@@ -29,7 +29,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 ---
 payload.Envelope.Body.notifications.Notification.*sObject]]></dw:set-payload>
                 </dw:transform-message>
-                <flow-ref name="mainFlow" doc:name="trigger mainFlow"/>
+                <flow-ref name="mainFlow" doc:name="mainFlow"/>
             </when>
             <otherwise>
                 <logger message="Trigger policy has been set to POLL. Sikpping this message" level="INFO" doc:name="Logger"/>
@@ -55,7 +55,7 @@ Here you should not:
         <choice doc:name="Trigger Policy">
             <when expression="#['poll' == '${trigger.policy}']">
                 <logger message="#[payload]" level="INFO" doc:name="log Opportunities  to be created/updated"/>
-                <flow-ref name="mainFlow" doc:name="trigger mainFlow"/>
+                <flow-ref name="mainFlow" doc:name="mainFlow"/>
             </when>
             <otherwise>
                 <logger message="Trigger policy has been set to PUSH. Skipping this message." level="INFO" doc:name="Logger"/>
