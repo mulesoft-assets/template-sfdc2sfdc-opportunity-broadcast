@@ -5,7 +5,7 @@
 	xmlns="http://www.mulesoft.org/schema/mule/core"
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
-	version="EE-3.7.1"
+	
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:json="http://www.mulesoft.org/schema/mule/json"
 	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
@@ -22,13 +22,18 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
 				<enricher source="#[payload == null ? null : payload.Id]" target="#[payload.Id]"
 					doc:name="enrich payload with existing SFDC Opportunity Id">
 					<sfdc:query-single config-ref="SalesforceB"
-						query="SELECT Id FROM Opportunity WHERE Name = '#[payload['Name']]'"
+						query="SELECT Id FROM Opportunity WHERE Name = '#[payload.Name]'"
 						doc:name="query Opportunity in Salesforce Instance B" />
 				</enricher>
 			</batch:step>
+            <batch:step name="enrichWithAccountInAWhenPush" accept-expression="('syncAccount' == '${account.sync.policy}') &amp;&amp; ('push' == '${trigger.policy}') &amp;&amp; (payload.AccountId != null)">
+                <enricher source="#[payload]" target="#[payload.Account]" doc:name="Store in Account">
+                    <sfdc:query-single config-ref="SalesforceA" query="SELECT Id, Name,AccountNumber,Description,NumberOfEmployees FROM Account WHERE Id = '#[payload.AccountId]'" doc:name="query Account in  Salesforce Instance A"/>
+                </enricher>
+            </batch:step>
 			 <batch:step name="findOrCreateAccountInBSetp" accept-expression="#['syncAccount' == '${account.sync.policy}' &amp;&amp; payload.Account != null]">
-                <enricher source="#[payload == null ? null : payload.Id]" target="#[recordVars['accountInBId']]" doc:name="store result in accountInBId">
-                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Account WHERE Name = '#[payload['Account']['Name']]'" doc:name="query Account in  Salesforce Instance B"/>
+                <enricher source="#[payload == null ? null : payload.Id]" target="#[recordVars.accountInBId]" doc:name="store result in accountInBId">
+                    <sfdc:query-single config-ref="SalesforceB" query="SELECT Id FROM Account WHERE Name = '#[payload.Account.Name]'" doc:name="query Account in  Salesforce Instance B"/>
                 </enricher>
                 <choice doc:name="Choice">
                     <when expression="#[recordVars.accountInB == null]">
@@ -86,7 +91,7 @@ payload map {
 		</batch:on-complete>
 	</batch:job>
     <flow name="mainFlow" >
-        <batch:execute name="syncOpportunitiesBatch" doc:name="trigger syncOpportunitiesBatch"/>
+        <batch:execute name="syncOpportunitiesBatch" doc:name="syncOpportunitiesBatch"/>
         <exception-strategy ref="defaultChoiceExceptionStrategy" doc:name="Reference Exception Strategy"/>
     </flow>
 

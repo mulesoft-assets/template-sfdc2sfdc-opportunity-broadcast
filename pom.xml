@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>org.mule.templates</groupId>
 		<artifactId>templates-tooling-parent-pom</artifactId>
-		<version>1.2.2</version>
+		<version>1.2.14</version>
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>template-sfdc2sfdc-opportunity-broadcast</artifactId>
 	<packaging>mule</packaging>
-	<version>1.2.4-SNAPSHOT</version>
+	<version>1.2.5-SNAPSHOT</version>
 	<name>template-sfdc2sfdc-opportunity-broadcast Mule Template Project</name>
 
 	<scm>
@@ -39,6 +39,7 @@
 	</build>
 
 	<dependencies>
+	
 		
 		<dependency>
 			<groupId>org.mule.modules</groupId>
