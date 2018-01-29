@@ -23,11 +23,12 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<salesforce:basic-connection username="${sfdc.b.username}"
 			password="${sfdc.b.password}" securityToken="${sfdc.b.securityToken}" />
 	</salesforce:sfdc-config>
-	<configuration-properties file="common.properties"
-		doc:name="Configuration properties" doc:id="523e4eea-d00f-4213-bde7-a2764a635851" />
-	<configuration-properties file="mule.${mule.env}.properties" doc:name="Configuration properties" doc:id="7115a17b-4a67-4607-8a7c-e8f91b0737de" />
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="4b7df0c7-b328-48d9-a039-b56957e8d891" >
 		<http:listener-connection host="0.0.0.0" port="${http.port}" />
 	</http:listener-config>
+	<configuration-properties file="common.properties"doc:name="Configuration properties" doc:id="523e4eea-d00f-4213-bde7-a2764a635851" />
+	<configuration-properties file="mule.${mule.env}.properties" doc:name="Configuration properties" doc:id="7115a17b-4a67-4607-8a7c-e8f91b0737de" />	
+	<configuration-properties doc:name="Configuration properties" doc:id="649ab867-d00a-4245-9559-8c9b6a7dcde5" file="mule-artifact.properties" />
 	
-	</mule>
+	
+</mule>
