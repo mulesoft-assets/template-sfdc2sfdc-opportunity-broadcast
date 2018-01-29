@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	
+	<flow name="businessLogicFlow" doc:id="8759532e-79b7-4789-990c-dc8e162bfd67" >
+		<batch:job jobName="broadcastOpportunitiesBatch" doc:id="204892ae-0d97-4326-beae-310c8d52b7a6" blockSize="${page.size}">
+			<batch:process-records>
+				<batch:step name="GetOpportunityInBStep" doc:id="b277c4d3-8ec1-4941-96be-e6fb9a8e2d9f" >
+					<salesforce:query-single config-ref="Salesforce_Sfdc_B_config" doc:name="Query Opportunity in Salesforce Instance B" doc:id="e828fbe5-8917-4833-a479-8df69b560884" target="IdInB">
+						<salesforce:salesforce-query>SELECT Id FROM Opportunity WHERE Name = ':name'</salesforce:salesforce-query>
+						<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"name" : payload.Name
+}]]]></salesforce:parameters>
+					</salesforce:query-single>
+					<ee:transform doc:name="Enrich Payload with IdInB" doc:id="c119f87d-9095-4962-b961-efe507b06a0c">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ vars.IdInB]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				
+</batch:step>
+				<batch:step name="findOrCreateAccountInBStep" doc:id="89713774-362a-4e92-9bdc-41e31802bf38" acceptExpression="#['${account.sync.policy}' == 'syncAccount' and payload.Account != null]">
+					<salesforce:query-single doc:name="Query Account in  Salesforce Instance B" doc:id="0f546a41-65be-483a-8e43-eb7d0cf48980" config-ref="Salesforce_Sfdc_B_config" target="accountInB">
+								<salesforce:salesforce-query>SELECT Id FROM Account WHERE Name = ':accountName'</salesforce:salesforce-query>
+								<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"accountName" : payload.Account.Name
+}]]]></salesforce:parameters>
+							</salesforce:query-single>
+					<choice doc:name="Does account need to be created?" doc:id="d2ecfa6c-a003-48c1-b4dc-02b75e00226f">
+								<when expression="#[vars.accountInB.Id == null]">
+									<ee:transform doc:name="Prepare Account data" doc:id="e344bc0f-ee19-4f71-8f3d-74b936ffa2ce">
+										<ee:message>
+										</ee:message>
+										<ee:variables>
+											<ee:set-variable variableName="newAccountPayload"><![CDATA[%dw 2.0
+output application/java
+---
+[payload.Account
+- "Id"
+++ ("NumberOfEmployees": payload.Account.NumberOfEmployees as Number {class: "java.lang.Integer"} default 0)
+]]]></ee:set-variable>
+										</ee:variables>
+									
+</ee:transform>
+									<salesforce:create type="Account" doc:name="Create Account in Salesforce Instance B" doc:id="8a47cb94-0020-41cb-9c07-be0871728cc3" config-ref="Salesforce_Sfdc_B_config" target="newAccountInB">
+										<salesforce:records><![CDATA[#[vars.newAccountPayload]]]></salesforce:records>
+									</salesforce:create>
+									<ee:transform doc:name="Enrich Payload with Account ID" doc:id="c119f87d-9095-4962-b961-efe507b06a0c">
+										<ee:message>
+											<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++
+{
+	AccountId: vars.newAccountInB[0].Id
+}]]></ee:set-payload>
+										</ee:message>
+									</ee:transform>
+								
+</when>
+								<otherwise>
+									<ee:transform doc:name="Enrich Payload with Account ID" doc:id="c119f87d-9095-4962-b961-efe507b06a0c">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ 
+{
+	AccountId: vars.accountInB.Id
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+								</otherwise>
+							</choice>
+
+
+				</batch:step>
+				<batch:step name="UpsertOpportunityInBStep" doc:id="78a74ab4-9b91-416d-985a-acda2ac377eb">
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="1ad86a98-643e-494a-a90a-32daab0b03cc" size="${page.size}">
+						<ee:transform doc:name="Prepare Opportunity data" doc:id="d484063f-6d81-42ce-98ef-7cec51b04672">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload map {
+($ - "LastModifiedDate"
+ - "Account"
+++ ("Amount": $.Amount as Number {class: "java.lang.Double"} default 0)
+++ ("CloseDate": $.CloseDate as Date) if ($.CloseDate != null))
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Log Opportunities to update/create" doc:id="d940f154-2b53-4df1-9962-306ffe8883f7" message="#['Opportunities to update/create: ' ++ write(payload, 'application/json', {'indent': 'false'})]"/>
+						<salesforce:upsert-bulk config-ref="Salesforce_Sfdc_B_config" type="Opportunity" externalIdFieldName="Id" doc:name="Upsert Opportunities in Salesforce Instance B" doc:id="26dee78b-3cbd-41d7-a260-538058420b0e" />
+					
+</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+			<batch:on-complete>
+				<ee:transform doc:name="Prepare migration result" doc:id="c84b4bc4-5a65-41c1-9d0c-f1ebd3d8db7a">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+"Migration Report: \n"
+ 
+++ "\n Time [milliseconds]: " 		++ payload.elapsedTimeInMillis
+++ "\n Total Records: "				++ payload.totalRecords
+++ "\n Successful Records: "		++ payload.successfulRecords
+++ "\n Failed Records: "			++ payload.failedRecords
+++ "\n Loaded Records: "			++ payload.loadedRecords
+++ "\n Processed Records: " 		++ payload.processedRecords]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+				<logger level="INFO" doc:name="Migration process has finished!" doc:id="b7575d38-7dbd-4602-9186-1bbb25234896" message="#[payload]" />
+
+			</batch:on-complete>
+		
+</batch:job>
+	</flow>
+	<flow name="mainFlow" doc:id="fbd67c5d-528c-44b3-b6b3-68e7e2b7498f" >
+		<flow-ref doc:name="trigger businessLogicFlow" doc:id="02850655-a5dc-4c89-bd79-a7e94cca7676" name="businessLogicFlow"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="488b507d-e26c-4c56-8759-8bb4f6645d71" type="ANY">
+				<flow-ref doc:name="errorHandlingFlow" doc:id="afdaf73c-0137-4d60-84f6-5c41234771a3" name="errorHandlingFlow"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

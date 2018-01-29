@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule  xmlns:os="http://www.mulesoft.org/schema/mule/os" 
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+
+	<flow name="pushFlow" doc:id="92a761dd-0887-4a02-afd2-cf692c361572" >
+		<http:listener doc:name="Listener" doc:id="ab6f4fa1-c65c-4c6c-9a5f-df4981046c72" config-ref="HTTP_Listener_config" path="/" allowedMethods="POST"/>
+		<choice doc:name='Trigger Policy' doc:id="5dd46525-a92a-4597-9ce5-68c054417509" >
+			<when expression="#['push' == '${trigger.policy}']" >
+				<ee:transform doc:name="XML To Opportunity" doc:id="319ace93-f407-4cbc-9bb3-51d89021f6ff" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.Envelope.Body.notifications.Notification.*sObject]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="mainFlow" doc:id="a6d7734e-bc60-41cc-ad58-5ec889c92665" name="mainFlow" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log - message has been skipped" doc:id="93bbbb8d-2cd9-4ee0-aa20-2f6caf49970c" message="Trigger policy has been set to POLL. Skipping this message." />
+			</otherwise>
+		</choice>
+		<set-payload value="&lt;soapenv:Envelope xmlns:soapenv='http://schemas.xmlsoap.org/soap/envelope/' xmlns:out='http://soap.sforce.com/2005/09/outbound'&gt;&lt;soapenv:Header/&gt;&lt;soapenv:Body&gt;&lt;out:notificationsResponse&gt;&lt;out:Ack&gt;true&lt;/out:Ack&gt;&lt;/out:notificationsResponse&gt;&lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;" doc:name="Set response body" doc:id="3d42a4e8-4fd8-4266-9253-484410fab7c2" mimeType="application/xml"/>
+	
+</flow>
+	<flow name="schedulerFlow" doc:id="5995b3d7-46ed-452b-ac66-b270f17d4161" >
+		<scheduler doc:name="Scheduler" doc:id="91e56b5f-3b73-4475-bc0e-3beb213ad932" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="${scheduler.frequency}" startDelay="${scheduler.startDelay}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<choice doc:name='Trigger Policy' doc:id="edaf6494-5718-4a75-b0ce-c3af7b798ae4" >
+			<when expression="#['poll' == '${trigger.policy}']" >
+				<flow-ref doc:name="sfdcQueryFlow" doc:id="ada07859-8839-4751-9623-68a08d31a472" name="sfdcQueryFlow"/>
+				<logger level="INFO" doc:name="Log Opportunities  to sync" doc:id="65934ef1-2939-4fab-bde9-1886331527ea" message="#['Opportunity objects to sync: ' ++ write(payload)]" />
+				<flow-ref doc:name="trigger mainFlow" doc:id="7011798d-d6e9-461b-9d4c-9f7746bf3d68" name="mainFlow"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Log - message has been skipped" doc:id="ca9188e4-acac-4a48-91c4-6a8ecdd5cde3" message="Trigger policy has been set to PUSH. Skipping this message."/>
+			</otherwise>
+		</choice>
+		
+	</flow>
+	<flow name="sfdcQueryFlow">
+		<os:retrieve key="watermark" objectStore="watermarkStore" target="lastQueryTimestamp" doc:name="Retrieve lastQueryDateA">
+        <os:default-value><![CDATA[${watermark.default.expression}]]></os:default-value>
+    </os:retrieve>
+    <salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Opportunities with filtering criteria from Salesforce Instance A">
+		<salesforce:salesforce-query>SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate, Type, Account.Id, Account.Name, Account.AccountNumber, Account.AccountSource, Account.AnnualRevenue, Account.BillingCity, Account.BillingCountry, Account.BillingPostalCode, Account.BillingState, Account.BillingStreet, Account.Description, Account.Fax, Account.Industry, Account.NumberOfEmployees, Account.Ownership, Account.ParentId, Account.Phone, Account.Rating, Account.ShippingCity, Account.ShippingCountry, Account.ShippingPostalCode, Account.ShippingState, Account.ShippingStreet, Account.Sic, Account.SicDesc, Account.Site, Account.TickerSymbol, Account.Type, Account.Website FROM Opportunity WHERE LastModifiedDate &gt; :lastModifiedDate AND Amount &gt; 5000</salesforce:salesforce-query>
+		<salesforce:parameters><![CDATA[#[output applicaton/java
+---
+{
+	"lastModifiedDate" : vars.lastQueryTimestamp
+}]]]></salesforce:parameters>
+    
+</salesforce:query>
+    <os:store key="watermark" failIfPresent="false" failOnNullValue="false" objectStore="watermarkStore" doc:name="Store lastQueryDateA">
+        <os:value>#[max(payload map $.LastModifiedDate)]</os:value>
+    </os:store>
+	</flow>
+</mule>
