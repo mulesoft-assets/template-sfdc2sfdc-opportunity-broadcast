@@ -27,13 +27,13 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 As a Salesforce admin I want to synchronize opportunities from one Salesforce org to another.
 
-This Template should serve as a foundation for setting an online sync of opportunities from one Salesforce instance to another. Every time there is a new opportunity or a change in an already existing one, the integration will poll for changes in Salesforce source instance and it will be responsible for updating the opportunity on the target org.
+This Template should serve as a foundation for setting an online sync of opportunities from one Salesforce instance to another. Every time there is new opportunity or a change in an already existing one, the integration will poll for changes in Salesforce source instance and it will be responsible for updating the opportunity on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
-As implemented, this Anypoint Template leverage the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing) and [Outbound messaging](https://www.salesforce.com/us/developer/docs/api/Content/sforce_api_om_outboundmessaging.htm)
-The batch job is divided in Input, Process and On Complete stages.
-The integration is triggered by a poll defined in the flow that is going to trigger the application, querying newest Salesforce updates/creations matching a filter criteria and executing the batch job.
+As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing) and [Outbound messaging](https://www.salesforce.com/us/developer/docs/api/Content/sforce_api_om_outboundmessaging.htm)
+The batch job is divided in Process and On Complete stages.
+The integration is triggered by a scheduler defined in the flow that is going to trigger the application, querying newest Salesforce updates/creations matching a filter criteria and executing the batch job.
 During the Process stage, each SFDC Opportunity will be filtered depending on, if it has an existing matching Opportunity in the SFDC Org B.
 The last step of the Process stage will group the Opportunities and create/update them in SFDC Org B.
 
@@ -150,6 +150,8 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
+**Application configuration**
+
 + http.port `9090` 
 + scheduler.frequency `60000`
 + scheduler.startDelay `0`
