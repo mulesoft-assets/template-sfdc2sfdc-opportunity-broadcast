@@ -25,27 +25,27 @@ Note that using this template is subject to the conditions of this [License Agre
 Please review the terms of the license before downloading and using this template. In short, you are allowed to use the template for free with Mule ESB Enterprise Edition, CloudHub, or as a trial in Anypoint Studio.
 
 # Use Case <a name="usecase"/>
-As a Salesforce admin I want to synchronize opportunities from one Salesforce org to another.
+As a Salesforce admin I want to migrate opportunities from one Salesforce organization to another.
 
 This Template should serve as a foundation for setting an online sync of opportunities from one Salesforce instance to another. Every time there is new opportunity or a change in an already existing one, the integration will poll for changes in Salesforce source instance and it will be responsible for updating the opportunity on the target org.
 
 Requirements have been set not only to be used as examples, but also to establish a starting point to adapt your integration to your requirements.
 
 As implemented, this Anypoint Template leverages the [Batch Module](http://www.mulesoft.org/documentation/display/current/Batch+Processing) and [Outbound messaging](https://www.salesforce.com/us/developer/docs/api/Content/sforce_api_om_outboundmessaging.htm)
-The batch job is divided in Process and On Complete stages.
+The batch job is divided in *Process* and *On Complete* stages.
 The integration is triggered by a scheduler defined in the flow that is going to trigger the application, querying newest Salesforce updates/creations matching a filter criteria and executing the batch job.
-During the Process stage, each SFDC Opportunity will be filtered depending on, if it has an existing matching Opportunity in the SFDC Org B.
-The last step of the Process stage will group the Opportunities and create/update them in SFDC Org B.
+During the *Process* stage, each Salesforce Opportunity will be filtered depending on, if it has an existing matching Opportunity in the Salesforce Org B.
+The last step of the *Process* stage will group the Opportunities and create/update them in Salesforce Org B.
 
 The integration could be also triggered by http inbound connector defined in the flow that is going to trigger the application and executing the batch job with received message from Salesforce source instance.
 Outbound messaging in Salesforce allows you to specify that changes to fields within Salesforce can cause messages with field values to be sent to designated external servers.
 Outbound messaging is part of the workflow rule functionality in Salesforce. Workflow rules watch for specific kinds of field changes and trigger automatic Salesforce actions in this case sending Opportunities as an outbound message to Mule Http inbound connector,
 which will then further process this message and creates Opportunities in target Salesforce org.
-Finally during the On Complete stage the Anypoint Template will log output statistics data into the console.
+Finally during the *On Complete* stage the Anypoint Template will log output statistics data into the console.
 
 # Considerations <a name="considerations"/>
 
-To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failling to do so could lead to unexpected behavior of the template.**
+To make this Anypoint Template run, there are certain preconditions that must be considered. All of them deal with the preparations in both source and destination systems, that must be made in order for all to run smoothly. **Failing to do so could lead to unexpected behavior of the template.**
 
 
 
@@ -117,10 +117,8 @@ First thing to know if you are a newcomer to Mule is where to get the tools.
 ### Importing an Anypoint Template into Studio
 Mule Studio offers several ways to import a project into the workspace, for instance: 
 
-+ Anypoint Studio generated Deployable Archive (.zip)
-+ Anypoint Studio Project from External Location
-+ Maven-based Mule Project from pom.xml
-+ Mule ESB Configuration XML from External Location
++ Anypoint Studio Project from File System
++ Packaged mule application (.jar)
 
 You can find a detailed description on how to do so in this [Documentation Page](http://www.mulesoft.org/documentation/display/current/Importing+and+Exporting+in+Studio).
 
@@ -141,7 +139,7 @@ After this, to trigger the use case you just need to hit the local http endpoint
 
 ## Running on CloudHub <a name="runoncloudhub"/>
 While [creating your application on CloudHub](http://www.mulesoft.org/documentation/display/current/Hello+World+on+CloudHub) (Or you can do it later as a next step), you need to go to Deployment > Advanced to set all environment variables detailed in **Properties to be configured** as well as the **mule.env**.
-Once your app is all set and started, there is no need to do anything else. Every time an Opportunity is created or modified, it will be automatically synchronised to SFDC Org B.
+Once your app is all set and started, there is no need to do anything else. Every time an Opportunity is created or modified, it will be automatically synchronized to Salesforce Org B.
 
 ### Deploying your Anypoint Template on CloudHub <a name="deployingyouranypointtemplateoncloudhub"/>
 Mule Studio provides you with really easy way to deploy your Template directly to CloudHub, for the specific steps to do so please check this [link](http://www.mulesoft.org/documentation/display/current/Deploying+Mule+Applications#DeployingMuleApplications-DeploytoCloudHub)
@@ -150,16 +148,23 @@ Mule Studio provides you with really easy way to deploy your Template directly t
 ## Properties to be configured (With examples) <a name="propertiestobeconfigured"/>
 In order to use this Mule Anypoint Template you need to configure properties (Credentials, configurations, etc.) either in properties file or in CloudHub as Environment Variables. Detail list with examples:
 ### Application configuration
-**Application configuration**
-
+**HTTP Connector configuration**
 + http.port `9090` 
+
+**Scheduler configuration**
 + scheduler.frequency `60000`
 + scheduler.startDelay `0`
-+ watermark.default.expression `YESTERDAY`
+
+**Watermarking default last query timestamp e.g. 2017-12-13T03:00:59Z**
++ watermark.default.expression `2017-12-13T03:00:59Z`
+
+**Batch Aggregator configuration**
 + page.size `100`
+
+**Trigger policy(push, poll)**
 + trigger.policy `push` | `poll`
 
-#### Account Sync Policy
+**Account Sync Policy**
 + account.sync.policy `syncAccount`
 
 **Note:** the property **account.sync.policy** can take any of the two following values: 
@@ -167,12 +172,12 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 + **empty_value**: if the propety has no value assigned to it then application will do nothing in what respect to the account and it'll just move the Opportunity over.
 + **syncAccount**: it will try to create the Opportunity's account if this is not pressent in the Salesforce instance B.
 
-#### Salesforce Connector configuration for company A
+**Salesforce Connector configuration for company A**
 + sfdc.a.username `bob.dylan@orga`
 + sfdc.a.password `DylanPassword123`
 + sfdc.a.securityToken `avsfwCUl7apQs56Xq2AKi3X`
 
-#### Salesforce Connector configuration for company B
+**Salesforce Connector configuration for company B**
 + sfdc.b.username `joan.baez@orgb`
 + sfdc.b.password `JoanBaez456`
 + sfdc.b.securityToken `ces56arl7apQs56XTddf34X`
@@ -180,11 +185,11 @@ In order to use this Mule Anypoint Template you need to configure properties (Cr
 # API Calls <a name="apicalls"/>
 Salesforce imposes limits on the number of API Calls that can be made. Therefore calculating this amount may be an important factor to consider. The Anypoint Template calls to the API can be calculated using the formula:
 
-***1 + X + X / 200***
+***1 + X + X / ${page.size}***
 
 Being ***X*** the number of Opportunities to be synchronized on each run. 
 
-The division by ***200*** is because, by default, Opportunities are gathered in groups of 200 for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
+The division by ***${page.size}*** is because, by default, Opportunities are gathered in groups of ${page.size} for each Upsert API Call in the commit step. Also consider that this calls are executed repeatedly every polling cycle.	
 
 For instance if 10 records are fetched from origin instance, then 12 api calls will be made (1 + 10 + 1).
 
@@ -209,12 +214,11 @@ In the visual editor they can be found on the *Global Element* tab.
 
 
 ## businessLogic.xml<a name="businesslogicxml"/>
-Functional aspect of the Template is implemented on this XML, directed by one flow that will poll for Salesforce creations/updates. The several message processors constitute four high level actions that fully implement the logic of this Template:
+Functional aspect of the Template is implemented on this XML, directed by one flow that will poll for Salesforce creations/updates. The several message processors constitute high level actions that fully implement the logic of this Template:
 
-1. During the Input stage the Anypoint Template will go to the Salesforce Org A and query all the existing Opportunities that match the filter criteria.
-2. During the Process stage, each SFDC opportunity will be filtered depending on, if it has an existing matching opportunity in the SFDC Org B.
-3. The last step of the Process stage will group the opportunities and create/update them in SFDC Org B.
-4. Finally during the On Complete stage the Template will logoutput statistics data into the console.
+1. During the *Process* stage, each Salesforce opportunity will be filtered depending on, if it has an existing matching opportunity in the Salesforce Org B.
+2. The last step of the *Process* stage will group the opportunities and create/update them in Salesforce Org B.
+3. Finally during the *On Complete* stage the Template will log output statistics data into the console.
 
 
 
