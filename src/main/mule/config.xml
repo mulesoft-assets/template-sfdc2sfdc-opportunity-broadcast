@@ -17,4 +17,4 @@
 	<configuration-properties file="mule-artifact.properties" doc:id="649ab867-d00a-4245-9559-8c9b6a7dcde5" doc:name="Configuration properties" />
 	
 	
-<global-property doc:name="Global Property" name="mule.env" value="dev" /></mule>
+<global-property name="mule.env" value="dev" doc:name="Global Property" /></mule>
