@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+    xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+    xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <munit:config name="test-suite.xml" doc:name="MUnit configuration" />
+
+    <configuration-properties doc:name="Configuration properties" doc:id="c382dc50-b83c-41be-ad31-42ccb929d758" file="mule.test.properties" />
+    <configuration-properties doc:name="Configuration properties" doc:id="a0f29785-69a4-48b7-8ef5-410c95ee7ff2" file="common.properties" />
+
+    <munit:before-test name="test-suite-Before_Test" description="Before tests actions" doc:id="cfcc36bf-6f7f-419d-bee9-dd01802fb54d">
+        <ee:transform doc:name="Prepare test account" doc:id="70186a2f-2984-4382-99e9-fa426b303785">
+            <ee:message>
+            </ee:message>
+            <ee:variables>
+                <ee:set-variable variableName="testAccount"><![CDATA[%dw 2.0
+output application/java
+---
+{
+	Name: "Test account opportunity " ++ randomInt(1000),
+	Description: "test description",
+	Industry: "Education",
+	NumberOfEmployees: 15000
+}]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <salesforce:create type="Account" doc:name="Create test Account in instance A" doc:id="c575435e-0bb3-481f-a049-b2b2afba0695"
+            config-ref="Salesforce_Sfdc_A_config">
+            <salesforce:records><![CDATA[#[[vars.testAccount]]]]></salesforce:records>
+        </salesforce:create>
+        <ee:transform doc:name="Save test account Id" doc:id="626f66dc-5098-404e-82da-24f4f67b6e28">
+            <ee:message>
+            </ee:message>
+            <ee:variables>
+                <ee:set-variable variableName="testAccount"><![CDATA[%dw 2.0
+output application/java
+---
+vars.testAccount ++ {
+	"Id": payload[0].Id
+}]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="Prepare test data" doc:id="16645dc2-0d1d-49cf-97d2-3a74d08ae928">
+            <ee:message>
+            </ee:message>
+            <ee:variables>
+                <ee:set-variable variableName="testDataNotMigrated"><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"Name": "Test opportunity - not migrated " ++ randomInt(1000),
+	"Amount": 1000,
+	"StageName": "Stage",
+	"CloseDate": now(),
+	"AccountId": vars.testAccount.Id
+}]]></ee:set-variable>
+                <ee:set-variable variableName="testDataMigrated"><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"Name": "Test opportunity - migrated " ++ randomInt(1000),
+	"Amount": 6000,
+	"StageName": "Stage",
+	"CloseDate": now(),
+	"AccountId": vars.testAccount.Id
+}]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <salesforce:create doc:name="Create Opportunities in instance A" doc:id="375b63e5-3160-42dc-82cc-a90aa84f8b86" config-ref="Salesforce_Sfdc_A_config"
+            type="Opportunity">
+            <salesforce:records><![CDATA[#[[vars.testDataMigrated, vars.testDataNotMigrated]]]]></salesforce:records>
+        </salesforce:create>
+        <set-variable value="#[payload map ($.id)]" doc:name="Save Ids to variable sfdcAIds" doc:id="289be942-4037-43e6-a6eb-bd33fbfec24d"
+            variableName="sfdcAIds" />
+    </munit:before-test>
+    
+    <munit:test name="test-suite-schedulerFlowTest" description="Test" doc:id="4ffcda90-21bf-4cd4-9460-09cf6ca578e5">
+        <munit:execution>
+            <scripting:execute doc:name="Sleep for 5s before we start tests" doc:id="68f96218-bb52-4fbc-92c8-1b014988e3e2" engine="groovy">
+                <scripting:code>sleep(5000)</scripting:code>
+            </scripting:execute>
+            <flow-ref doc:name="schedulerFlow" doc:id="5ab4bfcb-8d3f-4c20-b8a5-cd1d1a6a9165" name="schedulerFlow" />
+            <scripting:execute doc:name="Sleep for 30s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
+                engine="groovy">
+                <scripting:code>sleep(30000)</scripting:code>
+            </scripting:execute>
+            <salesforce:query doc:name="Query record should be migrated to instance B" doc:id="bfd63d0d-8c5c-409d-8f2b-e957ba1d7335"
+                config-ref="Salesforce_Sfdc_B_config" target="resultMigrated">
+                <salesforce:salesforce-query>SELECT Id, Name FROM Opportunity WHERE Name = ':name'</salesforce:salesforce-query>
+                <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"name" : vars.testDataMigrated.Name
+}]]]></salesforce:parameters>
+            </salesforce:query>
+            <set-variable value="#[[vars.resultMigrated[0].Id]]" doc:name="Save Ids to variable sfdcBIds" doc:id="8e11b030-d923-4c70-8cbb-0d41eda54207"
+                variableName="sfdcBIds" />
+            <salesforce:query doc:name="Query record shouldn't be migrated to instance B" doc:id="df0285a2-56c3-4248-9b13-83b897285b8c"
+                config-ref="Salesforce_Sfdc_B_config" target="resultNotMigrated">
+                <salesforce:salesforce-query>SELECT Id FROM Opportunity WHERE Name = ':name'</salesforce:salesforce-query>
+                <salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"name" : vars.testDataNotMigrated.Name
+}]]]></salesforce:parameters>
+            </salesforce:query>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that doc:name="Assert that we found migrated Opportunity in instance B" doc:id="0bab7348-b8ed-46e4-98f6-f1d34a4c4fbf"
+                expression="#[vars.resultMigrated[0].Name]" is="#[MunitTools::equalTo(vars.testDataMigrated.Name)]" message="Record isn't found in instance B" />
+            <munit-tools:assert-that doc:name="Assert that we didn't find Opportunity shouldn't be migrated in instance B"
+                doc:id="32f9655a-bf00-43d6-813d-ae6169fcc41f" expression="#[sizeOf(vars.resultNotMigrated)]" is="#[MunitTools::equalTo(0)]" message="Record is found in instance B" />
+        </munit:validation>
+    </munit:test>
+    
+    <munit:after-test name="test-suite-After_Test" description="After tests actions" doc:id="b7d1ad81-33dc-4a92-b2ee-7f651f7ca2e1">
+        <salesforce:delete doc:name="Delete test data from instance A" doc:id="1c961447-d3e1-4106-8509-ac5c957ebb9c" config-ref="Salesforce_Sfdc_A_config">
+            <salesforce:delete-ids><![CDATA[#[vars.sfdcAIds]]]></salesforce:delete-ids>
+        </salesforce:delete>
+        <salesforce:delete doc:name="Delete test Account from instance A" doc:id="b6766533-21ec-4a57-8f56-4f9a689d01a0" config-ref="Salesforce_Sfdc_A_config">
+            <salesforce:delete-ids><![CDATA[#[[vars.testAccount.Id]]]]></salesforce:delete-ids>
+        </salesforce:delete>
+        <salesforce:delete doc:name="Delete test data from instance B" doc:id="23c6ef00-e06a-4b02-848d-9835b37601a3" config-ref="Salesforce_Sfdc_B_config">
+            <salesforce:delete-ids><![CDATA[#[vars.sfdcBIds]]]></salesforce:delete-ids>
+        </salesforce:delete>
+    </munit:after-test>
+</mule>
