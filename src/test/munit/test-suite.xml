@@ -111,6 +111,9 @@ output application/java
 	"name" : vars.testDataNotMigrated.Name
 }]]]></salesforce:parameters>
             </salesforce:query>
+			<salesforce:delete doc:name="Delete test data from instance B" doc:id="23c6ef00-e06a-4b02-848d-9835b37601a3" config-ref="Salesforce_Sfdc_B_config">
+            <salesforce:delete-ids><![CDATA[#[vars.sfdcBIds]]]></salesforce:delete-ids>
+        </salesforce:delete>
         </munit:execution>
         <munit:validation>
             <munit-tools:assert-that doc:name="Assert that we found migrated Opportunity in instance B" doc:id="0bab7348-b8ed-46e4-98f6-f1d34a4c4fbf"
@@ -126,9 +129,6 @@ output application/java
         </salesforce:delete>
         <salesforce:delete doc:name="Delete test Account from instance A" doc:id="b6766533-21ec-4a57-8f56-4f9a689d01a0" config-ref="Salesforce_Sfdc_A_config">
             <salesforce:delete-ids><![CDATA[#[[vars.testAccount.Id]]]]></salesforce:delete-ids>
-        </salesforce:delete>
-        <salesforce:delete doc:name="Delete test data from instance B" doc:id="23c6ef00-e06a-4b02-848d-9835b37601a3" config-ref="Salesforce_Sfdc_B_config">
-            <salesforce:delete-ids><![CDATA[#[vars.sfdcBIds]]]></salesforce:delete-ids>
         </salesforce:delete>
     </munit:after-test>
 </mule>
