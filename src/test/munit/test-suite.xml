@@ -87,7 +87,7 @@ output application/java
                 <scripting:code>sleep(5000)</scripting:code>
             </scripting:execute>
             <flow-ref doc:name="schedulerFlow" doc:id="5ab4bfcb-8d3f-4c20-b8a5-cd1d1a6a9165" name="schedulerFlow" />
-            <scripting:execute doc:name="Sleep for 30s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
+            <scripting:execute doc:name="Sleep for 60s until the processing is completed" doc:id="b09fe305-3000-4571-b824-8b555395ccb7"
                 engine="groovy">
                 <scripting:code>sleep(60000)</scripting:code>
             </scripting:execute>
@@ -99,7 +99,6 @@ output application/java
 	"name" : vars.testDataMigrated.Name
 }]]]></salesforce:parameters>
 			</salesforce:query>
-			<set-variable value="#[[vars.resultMigrated[0].Id]]" doc:name="Copy_of_Save Ids to variable sfdcBIds" doc:id="ac847f24-fda4-4ef7-b1b3-26508f7768f1" variableName="sfdcBIds" />
 			<salesforce:query doc:name="Query record shouldn't be migrated to instance B" doc:id="df0285a2-56c3-4248-9b13-83b897285b8c"
                 config-ref="Salesforce_Sfdc_B_config" target="resultNotMigrated">
                 <salesforce:salesforce-query>SELECT Id FROM Opportunity WHERE Name = ':name'</salesforce:salesforce-query>
@@ -109,8 +108,8 @@ output application/java
 	"name" : vars.testDataNotMigrated.Name
 }]]]></salesforce:parameters>
             </salesforce:query>
-			<salesforce:delete doc:name="Copy_of_Delete test data from instance B" doc:id="d04f6d43-113a-473d-b737-cb849d40a36d" config-ref="Salesforce_Sfdc_B_config">
-			<salesforce:delete-ids><![CDATA[#[vars.sfdcBIds]]]></salesforce:delete-ids>
+			<salesforce:delete doc:name="Delete test data from instance B" doc:id="d04f6d43-113a-473d-b737-cb849d40a36d" config-ref="Salesforce_Sfdc_B_config">
+			<salesforce:delete-ids><![CDATA[#[[vars.resultMigrated[0].Id]]]]></salesforce:delete-ids>
 		</salesforce:delete>
         </munit:execution>
         <munit:validation>
