@@ -54,7 +54,7 @@ payload.Envelope.Body.notifications.Notification.*sObject]]></ee:set-payload>
 	</flow>
 	<flow name="sfdcQueryFlow">
 		<os:retrieve key="watermark" objectStore="watermarkStore" target="lastQueryTimestamp" doc:name="Retrieve lastQueryDateA">
-        <os:default-value><![CDATA[#[${watermark.default.expression}]]]></os:default-value>
+        <os:default-value ><![CDATA[#[read(p('watermark.default.expression'))]]]></os:default-value>
     </os:retrieve>
 		<salesforce:query config-ref="Salesforce_Sfdc_A_config" doc:name="Query Opportunities with filtering criteria from Salesforce Instance A">
 		<salesforce:salesforce-query>SELECT LastModifiedDate, Name, Amount, StageName, Probability, CloseDate, Type, Account.Id, Account.Name, Account.AccountNumber, Account.AccountSource, Account.AnnualRevenue, Account.BillingCity, Account.BillingCountry, Account.BillingPostalCode, Account.BillingState, Account.BillingStreet, Account.Description, Account.Fax, Account.Industry, Account.NumberOfEmployees, Account.Ownership, Account.ParentId, Account.Phone, Account.Rating, Account.ShippingCity, Account.ShippingCountry, Account.ShippingPostalCode, Account.ShippingState, Account.ShippingStreet, Account.Sic, Account.SicDesc, Account.Site, Account.TickerSymbol, Account.Type, Account.Website FROM Opportunity WHERE LastModifiedDate &gt; :lastModifiedDate AND Amount &gt; 5000</salesforce:salesforce-query>
